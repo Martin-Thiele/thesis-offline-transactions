@@ -1,0 +1,70 @@
+\documentclass[12pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{wrapfig}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usetikzlibrary{shapes}
+\usetikzlibrary{arrows.meta}
+
+\title{Thesis description \\ \large{Exploring decentralized digital banking for the unbanked}}
+\date{\parbox{\linewidth}{\centering%
+  \bigskip}
+  \endgraf\endgraf\medskip\today\endgraf}
+  \author{Martin Thiele}
+
+
+\begin{document}
+\maketitle
+% \tableofcontents
+% \clearpage
+
+\pagenumbering{arabic}
+\section{Background}
+In 2017 more than 1.7 billion people were unbanked, accounting for approximately 31\% of the earth's population at the time\cite{findex}. With the widespread adoption of the smartphone and the rapid development of the new financial infrastructure that is becoming widespread with the crypto economy, we set out to explore the possibilities of creating basic banking where it is still inaccessible, unaffordable, manual/inefficient, or untrusted in some regions around the world, such as those with substantial poverty, corruption, no or weak rule of law, untrusted government, or dominant private sectors. With a smartphone available it is possible to store, send and receive money without the use of traditional banks, by taking part in a decentralized peer-to-peer computer network that maintains consensus ensuring that all transactions on this network are append-only and tamper-proof, also known as blockchain and distributed ledger technology (BC/DL).
+\section{Goals}
+The goals of this thesis are at its core to assess, design, implement and demonstrate a modular and configurable architecture suitable for basic smartphone-based digital banking, supporting payments and atomic exchanges of digital assets, initially centralized but eventually decentralized.
+
+Additionally, if time permits it we'd like to set out to:
+\begin{itemize}
+    \item Employ a trusted backbone network for availability for crash fault tolerance.
+    \item Employ a scalable and (energy-)efficient blockchain or distributed ledger system, permissioned or nonpermissioned, for Byzantine fault tolerance.
+    \item Support safe (finally settled) transactions in offline mode, perhaps through the use of bluetooth.
+    \item Look into the theoretical and practical trade-offs between desirable properties such as availability and consistency of the ACID properties and partition tolerance, fault tolerance, privacy, scalability, implementation complexity, and cost.
+\end{itemize}
+\section{Tasks}
+We have set a baseline and defined some stretch goals in case time permits it. These are as follows:
+\begin{itemize}
+    \item Baseline
+    \begin{itemize}
+        \item Identify and investigate a relevant target group where basic digial banking is lacking.
+        \item Identify and analyze available literature, artifacts and software repositories on the state of the art of basic digital banking.
+        \item Analyze and specify modular system requirements of a basic digital banking system for one cryptocurrency, including authentication and authorization, account-to-account transfers and activity monitoring
+        \item Design, code and test a centralized system that implements the specification, using standard technology such as an RDBMS.
+        \item Provide a simple (web) app that exercises and illustrates basic digital banking by using the implemented system on a simple smartphone.
+    \end{itemize}
+    \item Extend the system to allow for multiple resource types, e.g. payment versus token delivery
+    \item Decentralization
+    \begin{itemize}
+        \item Reimplement the system specification using a small P2P network of trusted nodes with crash-fault tolerance and acceptable energy consumption, latency and throughput.
+        \item Investigate other BC/DL systems and analyze their appropriateness as a (partial) synchronous decentralized backbone network for basic digital banking.
+    \end{itemize}
+\end{itemize}
+\section{Learning objectives}
+\begin{itemize}
+    \item Describe and explain the basic characteristics, designs, properties and trade-offs in blockchain and distributed ledger technology.
+    \item Analyze, design, implement, test and evaluate a modular software architecture that is adequate for identified basic digital banking requirements.
+    \item Investigate and discuss how existing BC/DL technology can be employed to provide a decentralized backbone network for affordable and available smartphone-based basic digital banking in regions with basic wireless networking.
+    \item Research and discuss how payments and atomic exchanges can be finalized (settled) by smartphone users while being offline (from the backbone network) for extended periods of time.
+\end{itemize}
+
+\begin{thebibliography}{1}
+    \bibitem{findex} 
+    The world bank - 2017 report\\
+    \texttt{https://globalfindex.worldbank.org/sites/globalfindex/files/chapters/2017
+    \%20Findex\%20full\%20report\_chapter2.pdf}
+\end{thebibliography}
+\end{document}

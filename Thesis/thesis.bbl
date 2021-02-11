@@ -1,0 +1,36 @@
+\newcommand{\etalchar}[1]{$^{#1}$}
+\begin{thebibliography}{ABB{\etalchar{+}}18}
+
+\bibitem[ABB{\etalchar{+}}18]{androulaki2018hyperledger}
+Elli Androulaki, Artem Barger, Vita Bortnikov, Christian Cachin, Konstantinos
+  Christidis, Angelo De~Caro, David Enyeart, Christopher Ferris, Gennady
+  Laventman, Yacov Manevich, et~al.
+\newblock {Hyperledger Fabric}: A distributed operating system for permissioned
+  blockchains.
+\newblock In {\em Proceedings of the Thirteenth EuroSys Conference}, page~30.
+  ACM, 2018.
+
+\bibitem[Asp18]{aspnes2018}
+James Aspnes.
+\newblock Notes on theory of distributed systems.
+\newblock Lecture Notes for CPSC 465/565, Fall 2017, February 2018.
+
+\bibitem[Hen18]{henglein2018b}
+Fritz Henglein.
+\newblock Virtual savings and loan associations: Peer-to-peer banking and
+  trading based on low-power smartphones.
+\newblock Project proposal to CARE Denmark, June 2018.
+
+\bibitem[ILK19]{ilk2019}
+Ikechi~Saviour Igboanusi, Jae-Min Lee, and Dong-Seong Kim.
+\newblock {NFC Pure Wallet (PW)}: An offline and real-time blockchain
+  transaction architecture.
+\newblock Preprint, December 2019.
+
+\bibitem[TG20]{torresgarcia2020}
+Juan-Manuel Torres~Garcia.
+\newblock Algebraic resource accounting for transfers and transformations.
+\newblock Master's thesis in computer science, Department of Computer Science,
+  University of Copenhagen (DIKU), September 2020.
+
+\end{thebibliography}
