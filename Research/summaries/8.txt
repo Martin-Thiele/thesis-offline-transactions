@@ -1,0 +1,2 @@
+Pretty vague implementation of an offline adhoc network transaction utilizing SPKI and certificates.
+A third party certifying a bank seems to be the common theme.

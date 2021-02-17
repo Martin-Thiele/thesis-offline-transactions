@@ -1,0 +1,70 @@
+Electronic commerce (e-commerce) has since its introduction in 1990 become very popular, with 21% of payments being done through online payments in 2012. It was estimated that 95% of all e-commerce in 2004 was done through the use of credit cards.
+
+"The future of a specific electronic payment system depends upon how it overcomes the practical and
+analytical challenges faced by various means of online payments. These challenges include issues of law and regulation (buyer and seller protection), technological capabilities of e-payment service providers, commercial relationships, and security considerations such as verification and authentication issues (Paunov and Vickery,2006)."
+
+Credit cards:
+- Very popular
+- Initialy not very secure
+- Easy to use
+- High fees (Paunov and Vickery, 2006)
+
+Debit cards:
+- Most popular non-cash payment instrument globally as of 2013
+- Lower fees than credit cards, suitable for micropayments
+- More secure than credit cards due to higher identification requirements
+
+Mobile payments
+- Convenient (Hoofnagle, et al. (2012))
+- Low fees (Hoofnagle, et al. (2012))
+- Increased security of e-payment (Hoofnagle, et al. (2012))
+- Easy to collect useful information about customers and their purchases
+- High penetration of mobile phones compared to telecommunication infrastructure
+- High userbase
+- Suitable for offline micropayments as well as for online purchases.
+- High security (Hoofnagle, et al (2012))
+- Privacy issues
+- Inability to cater to international payments
+
+Mobile wallets:
+- Convenient
+- Utilizes NFC, QR codes, or cloud-based solutions
+
+Electronic Cash
+- Anonymous
+- Required specialized hardware
+- Mostly dead, DigiCash declared bankruptcy after 9 years in 1998
+- Distribute pre-paid cards or electronic tokens that represent a certain value and can be exchanged for hard cash
+
+Requirements for an electronic payment system
+- SSL or SET
+- Confidentiality of information shared by consumers
+- Data integrity
+- Authentication of all the participants
+- Non-repudiation
+- End-user requirements:
+-- Usability
+-- Flexibility
+-- Affordability
+-- Reliability
+-- Speed of transactions
+-- Availability
+
+Requirements for adoption (Mallat 2007):
+- Convenient - mobile payment foud to be the most convenient for small payments
+- Complexity - Smart cards and mobile payments are too complex and therefore has received less adoption, it is to be expected that mobile payments will become less complex
+- Costs - Users refrained from mobile payment methods because of high pricing.
+- Security - A very important point. A major barrier in adoption to e-commerce transactions
+
+Karp (2015) notes that one of the major challenges for mobile payment systems is the increasing rate of cyber-crime that results in data theft and cyber-attacks on financial data.
+
+"Radio barcodes technology is believed to be a revolutionary addition to mobile payments systems"
+- Can be used to locate things a tag is embedded on
+
+Consider reading (some of) the referenced papers:
+- Paunov and Vickery, 2006
+- Hoofnagle, et al. 2012
+- Ismaili et al. 2014
+- Koponen 2006
+- Mallat 2007 (Also includes a table of contributing factors for adoption)
+- Karp 2015

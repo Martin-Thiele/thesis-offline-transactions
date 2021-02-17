@@ -1,0 +1,14 @@
+Introduces an eVoucher system on phones
+
+- Receive eVouchers from issuer to beneficiary
+- Transfer eVouchers from device to device (C2C)
+-- Using NFC with confirmation
+-- SMS
+-- RFID
+- Payment: Transfering voucher from device to payment terminal (C2B)
+- Clearance between business and issuer over a network
+- Check balance, expiration, history etc from phone
+
+Very interesting design, very low level and somewhat old, based on MIDlets (java) infrastructure.
+
+speed of cryptographic operations were a major concern

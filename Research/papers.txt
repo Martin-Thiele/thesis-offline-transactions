@@ -1,0 +1,17 @@
+https://core.ac.uk/download/pdf/234627158.pdf
+https://www.researchgate.net/publication/279572585_New_mobile_payment_protocol_Mobile_pay_center_protocol_MPCP
+https://www.sciencedirect.com/science/article/abs/pii/S1567422307000026
+https://ieeexplore.ieee.org/document/6295773
+https://www.researchgate.net/publication/220384933_An_Architectural_Design_for_Secure_Mobile_Remote_Macro-Payments
+https://www.researchgate.net/publication/272816109_Mobile_Payment_Method_Based_on_Public-Key_Cryptography
+https://www.researchgate.net/publication/336808600_EMV-Compatible_Offline_Mobile_Payment_Protocol_with_Mutual_Authentication
+https://core.ac.uk/download/pdf/72805943.pdf
+https://indjst.org/articles/offline-transactions-functionality-in-ewallets
+https://dl.acm.org/doi/abs/10.1145/1592606.1592613
+https://www.researchgate.net/publication/281677474_Review_and_Comparison_of_Mobile_Payment_Protocol/
+
+Found after summarizing all the above ones:
+https://www.researchgate.net/publication/273550411_A_Secure_Electronic_Transaction_Payment_Protocol_Design_and_Implementation
+https://www.researchgate.net/publication/257727912_Analyze_on_Mobile_Payment_Based_on_RFID
+https://ieeexplore.ieee.org/document/7123175
+https://www.researchgate.net/publication/220739346_PayFlux_-_Secure_Electronic_Payment_in_Mobile_Ad_Hoc_Networks

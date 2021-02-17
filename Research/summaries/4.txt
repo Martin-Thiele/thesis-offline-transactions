@@ -1,0 +1,35 @@
+- Defines what a mobile payment is
+- Defines who the stakeholders are and their incentives and strategies
+- Characteristics of necessities for adoption
+-- Simplicity and Usability
+-- Universality and Interoperability
+-- Security, Privacy and Trust
+-- Cost, Speed and Cross border payments
+
+- Payment types
+-- B2B
+-- B2C
+-- C2C
+-- B2G
+-- P2P
+
+- Mobile Payment Methods
+-- SMS (Short Message Service)
+-- USSD (Unstrucuted SUpplementary Service Data)
+-- WAP/GPRS
+-- Phone-based Applications
+-- Sim-based application
+-- NFC
+-- Dual Chip (Two sim card slots)
+-- Mobile Wallet
+
+- Generic Architecture of M-payments
+The M-payment Application Service Provider (MASP) provides the necessary hardware / software and acts as an intermediary between the consumer and the merchant. The MASP has user info and has their info mapped to their bank account details.
+1. The consumer delivers identification information, like a phone number or a username to the merchant
+2. the merchant requests payment
+3. The consumer confirms the request and authorizes payment
+4. The MASP receives authorization and verifies the authenticity.
+5. The MASP debits the customer and credits the merchant by interacting with the bank.
+6. Both parties receive a confirmation
+
+Implementation of a simple P2P-SMS based m-payment system

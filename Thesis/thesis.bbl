@@ -1,36 +1,28 @@
 \newcommand{\etalchar}[1]{$^{#1}$}
-\begin{thebibliography}{ABB{\etalchar{+}}18}
+\providecommand{\bysame}{\leavevmode\hbox to3em{\hrulefill}\thinspace}
+\providecommand{\MR}{\relax\ifhmode\unskip\space\fi MR }
+% \MRhref is called by the amsart/book/proc definition of \MR.
+\providecommand{\MRhref}[2]{%
+  \href{http://www.ams.org/mathscinet-getitem?mr=#1}{#2}
+}
+\providecommand{\href}[2]{#2}
+\begin{thebibliography}{DKKS{\etalchar{+}}18}
 
-\bibitem[ABB{\etalchar{+}}18]{androulaki2018hyperledger}
-Elli Androulaki, Artem Barger, Vita Bortnikov, Christian Cachin, Konstantinos
-  Christidis, Angelo De~Caro, David Enyeart, Christopher Ferris, Gennady
-  Laventman, Yacov Manevich, et~al.
-\newblock {Hyperledger Fabric}: A distributed operating system for permissioned
-  blockchains.
-\newblock In {\em Proceedings of the Thirteenth EuroSys Conference}, page~30.
-  ACM, 2018.
+\bibitem[DKKS{\etalchar{+}}18]{gfindex}
+Asli Demirguc-Kunt, Leora Klapper, Dorothe Singer, Saniya Ansar, and Jake Hess,
+  \emph{The global findex database 2017: Measuring financial inclusion and the
+  fintech revolution}, 04 2018.
 
-\bibitem[Asp18]{aspnes2018}
-James Aspnes.
-\newblock Notes on theory of distributed systems.
-\newblock Lecture Notes for CPSC 465/565, Fall 2017, February 2018.
+\bibitem[EHM14]{epayment_requirements}
+Houssam El, Hanane Houmani, and Hicham Madroumi, \emph{A secure electronic
+  transaction payment protocol design and implementation}, International
+  Journal of Advanced Computer Science and Applications \textbf{5} (2014).
 
-\bibitem[Hen18]{henglein2018b}
-Fritz Henglein.
-\newblock Virtual savings and loan associations: Peer-to-peer banking and
-  trading based on low-power smartphones.
-\newblock Project proposal to CARE Denmark, June 2018.
+\bibitem[MROO15]{owidinternet}
+Hannah~Ritchie Max~Roser and Esteban Ortiz-Ospina, \emph{Internet}, Our World
+  in Data (2015), https://ourworldindata.org/internet.
 
-\bibitem[ILK19]{ilk2019}
-Ikechi~Saviour Igboanusi, Jae-Min Lee, and Dong-Seong Kim.
-\newblock {NFC Pure Wallet (PW)}: An offline and real-time blockchain
-  transaction architecture.
-\newblock Preprint, December 2019.
-
-\bibitem[TG20]{torresgarcia2020}
-Juan-Manuel Torres~Garcia.
-\newblock Algebraic resource accounting for transfers and transformations.
-\newblock Master's thesis in computer science, Department of Computer Science,
-  University of Copenhagen (DIKU), September 2020.
+\bibitem[Puk15]{mpp_comparisons}
+Pensri Pukk, \emph{Review and comparison of mobile payment protocol}.
 
 \end{thebibliography}

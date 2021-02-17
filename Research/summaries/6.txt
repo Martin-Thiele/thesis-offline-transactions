@@ -1,0 +1,5 @@
+- Introduction to different payment methods
+- An RSA based method in 3 steps: Authentication, Recognition, Payment
+- Since it uses the public key RSA cryptosystem, it is susceptible to brute force attacks, as such the public key size has a large say in operation costs and security
+
+Poor paper...

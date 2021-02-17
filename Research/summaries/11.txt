@@ -1,0 +1,32 @@
+- Introduction to mobile devices and market size
+- Types of mobile payment procedures:
+-- Proximity vs remote
+-- micro vs macro
+-- post-paid vs pre-paid
+- Mobile payment technology
+-- SMS
+-- WAP
+-- NFC
+-- RFID
+-- Smart card
+-- Internet
+-- USSD
+-- IVR
+-- Magnetic
+- Security of mobile payment
+-- Security properties (Has to uphold these)
+--- Confidentiality
+--- Integrity
+--- Authentication
+--- Non-repuditian
+--- Availability
+--- Authorization
+-- Cryptography concept
+--- Symmetric Key Cryptography (DES, 3DES, AES)
+--- Assymtric Key Cryptography (RSA, ECC)
+--- Hash function
+- Analyzis of Existing Secure Mobile Payment Protocols
+-- SET, iKP, LMPP, etc. (in theis document)
+-- Methodology Aspect
+-- Security Aspect
+-- Performance Aspect

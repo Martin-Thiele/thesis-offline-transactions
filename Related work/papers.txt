@@ -1,9 +1,0 @@
-https://core.ac.uk/download/pdf/234627158.pdf
-https://www.researchgate.net/publication/279572585_New_mobile_payment_protocol_Mobile_pay_center_protocol_MPCP
-https://ieeexplore.ieee.org/document/1210227
-https://www.sciencedirect.com/science/article/abs/pii/S1567422307000026
-https://ieeexplore.ieee.org/document/6295773
-https://www.researchgate.net/publication/220384933_An_Architectural_Design_for_Secure_Mobile_Remote_Macro-Payments
-https://www.researchgate.net/publication/272816109_Mobile_Payment_Method_Based_on_Public-Key_Cryptography
-https://www.researchgate.net/publication/336808600_EMV-Compatible_Offline_Mobile_Payment_Protocol_with_Mutual_Authentication
-https://core.ac.uk/download/pdf/72805943.pdf

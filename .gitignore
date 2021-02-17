@@ -1,0 +1,6 @@
+Related_work/papers/
+Thesis/*
+!Thesis/thesis.pdf
+!Thesis/thesis.tex
+!Thesis/logos
+!Thesis/figs

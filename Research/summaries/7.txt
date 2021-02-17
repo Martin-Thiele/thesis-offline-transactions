@@ -1,0 +1,23 @@
+The EMV credit card was found susceptible to man-in-the-middle attacks. Yang 2014 proposed an enhancement EPMAR, but it ignores the exceeding of a credit quota caused by offline transactions. This paper enhances further and introduces EOPMA and removes this issue by utilizing a reverse hash chain technique to guarantee the payment.
+
+NFC faces following problem:
+1) Eavesdropping
+2) A malicious user can attempt to modify the message content.
+3) A malicious user can disturb the message and corrupt it
+4) A malicious user can determine the location of a particular NFC device because the ID numbber of each NFC device is unique. When an NFC transaction is conducted offline, the merchant is unable to confirm the validity of a virtual credit card with the issuer in a timely manner
+
+Extremely interesting paper about the improvements of the EMV payment method and how offline transactions could be ensured. Need to study this further and look more into EMV to fully understand this.
+
+
+
+From the EMV credit card FAQ
+
+5. Why are EMV credit and debit cards and EMV chip payment transactions secure?
+
+EMV secures the payment transaction with enhanced functionality in three areas:
+
+Card authentication, protecting against counterfeit cards. The card is authenticated during the payment transaction, protecting against counterfeit cards. Transactions require an authentic card validated either online by the issuer using a dynamic cryptogram or offline with the terminal using Static Data Authentication (SDA), Dynamic Data Authentication (DDA) or Combined DDA with application cryptogram generation (CDA). EMV transactions also create unique transaction data, so that any captured data cannot be used to execute new transactions.
+
+Cardholder verification, authenticating the cardholder and protecting against lost and stolen cards. Cardholder verification ensures that the person attempting to make the transaction is the person to whom the card belongs. EMV supports four cardholder verification methods (CVM): offline PIN, online PIN, signature, or no CVM. The issuer prioritizes CVMs based on the associated risk of the transaction (for example, no CVM is used for unattended devices where transaction amounts are typically quite low).
+
+Transaction authorization, using issuer-defined rules to authorize transactions. The transaction is authorized either online and offline. For an online authorization, transactions proceed as they do today in the U.S. with magnetic stripe cards. The transaction information is sent to the issuer, along with a transaction-specific cryptogram, and the issuer either authorizes or declines the transaction. In an offline EMV transaction, the card and terminal communicate and use issuer-defined risk parameters that are set in the card to determine whether the transaction can be authorized. Offline transactions are used when terminals do not have online connectivity (e.g., at a ticket kiosk) or in countries where telecommunications costs are high.

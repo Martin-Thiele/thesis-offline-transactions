@@ -1,0 +1,18 @@
+- An introduction to e-commerce and its success
+- Definition of a mobile payment and a mobile device
+-- Any mobile phone, Personal Digital Assistant (PDA) or tablet able to initiate, authorize and confirm an exchange for goods or services
+- Definition of micro (< $10) and macro payments
+
+
+"In order to achieve secure communications during the payment transaction, symmetric and
+asymmetric cryptography are used normally among engaging customers. Most of the protocols
+in recent years are developed on public-key infrastructure (PKI) [10, 11, 12, 13] where as the
+remaining employ symmetric key operations [14, 15]. However, the security protocols using
+symmetric-key operations consume lower computations at all the engaging parties and they are
+good enough to support transaction security properties such as party authentication, transaction
+privacy, transaction integrity, and non-repudiation. The proposed architecture ensures high level
+security and convenience using symmetric key operations."
+
+Propose a new design for remote macro-payments on WTLS with 5 entities: Mobile client, Mobile Payment Application Service Provider (MPASP) server, Client bank, Merchant and Merchant bank
+
+Defines how they meet requirements like privacy, non-repuditian

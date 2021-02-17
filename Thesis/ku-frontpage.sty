@@ -1,11 +1,11 @@
-% ku-frontpage.sty                                                 12 July 2017
+% ku-frontpage.sty                                                14 March 2018
 %------------------------------------------------------------------------------
 % Copyright (c) 2017 by M.O.Larsen.
 % Distributed under the terms of the GNU General Public License v3.0.
 %
 % LaTeX style for front pages adhering to University of Copenhagen's design
-% guide (http://http://designguide.ku.dk/) for science faculty and main
-% KU-style.
+% guide (http://http://designguide.ku.dk/) for science and sund faculty,
+% and main KU-style.
 %
 % Author:
 %   Mads Ohm Larsen <ohm@nbi.ku.dk>
@@ -14,7 +14,7 @@
 % (http://www.math.ku.dk/~m00cha/), however translated all call to their
 % English equivalant and included newer logos.
 %------------------------------------------------------------------------------
-\ProvidesPackage{ku-frontpage}[2017/07/12 v0.1 Frontpages with University of Copenhagen logos]
+\ProvidesPackage{ku-frontpage}[2018/03/14 v0.3 Frontpages with University of Copenhagen logos]
 
 %%% Define 'if''s for style.
 \newif\if@kutitlepage\@kutitlepagefalse \DeclareOption{titlepage}{\@kutitlepagetrue}
@@ -27,6 +27,7 @@
 
 %%% Define 'if''s for faculties.
 \newif\if@science                       \DeclareOption{science}{\@sciencetrue}
+\newif\if@sund                          \DeclareOption{sund}{\@sundtrue}
 \newif\if@ku                            \DeclareOption{ku}{\@kutrue}
 
 %%% Warning about unknown options
@@ -51,6 +52,7 @@
 \if@kudanish    \def\KULANG{danish}     \fi
 
 \if@science     \def\KUFACULTY{science} \fi
+\if@sund        \def\KUFACULTY{sund}    \fi
 \if@ku          \def\KUFACULTY{ku}      \fi
 
 %%% Some packages are required for this package.
@@ -59,14 +61,20 @@
 \RequirePackage{graphicx}
 \RequirePackage{times}
 \RequirePackage{ifthen}
-\RequirePackage[a4paper, hmargin={55pt, 55pt}, vmargin={2.8cm, 2.8cm}]{geometry}
 
+%%% Define the page to have 12 horizontal modules and 24 vertical modules.
+\RequirePackage[absolute]{textpos}
+\TPGrid{12}{24}
+
+%%% Include hyperref for PDF attributes. These are set after document is begun,
+%%% to include the title, subtitle, and author.
+\RequirePackage{hyperref}
 \AtBeginDocument{
-  \RequirePackage[
+  \hypersetup{
     pdftitle={\TITLE},
     pdfsubject={\SUBTITLE},
     pdfauthor={\AUTHOR}
-  ]{hyperref}
+  }
 }
 
 %%% Define custom methods for frontpage.
@@ -96,23 +104,32 @@
 
   \def\maketitle{
     \thispagestyle{empty}
-    \AddToShipoutPicture*{\put(0, -35){\includegraphics*{logos/ku-logo}}}
-    \AddToShipoutPicture*{\put(5, -10){\includegraphics*{logos/\KUFACULTY-\KULANG}}}
+    \AddToShipoutPicture*{\put( 0, -35){\includegraphics*{logos/ku-logo}}}
+    \AddToShipoutPicture*{\put(-8,   8){\includegraphics*{logos/\KUFACULTY-\KULANG}}}
 
     \ifthenelse{\equal{\FRONTPAGEIMAGE}{...}}{}{
       \AddToShipoutPicture*{
-        \AtPageUpperLeft{\raisebox{-185mm}{\hspace{55pt}\includegraphics*[width=\textwidth, height=100mm, keepaspectratio]{\FRONTPAGEIMAGE}}}
+        \AtPageUpperLeft{\raisebox{-185mm}{\hspace{75pt}\includegraphics*[width=1.15\textwidth, height=100mm, keepaspectratio]{\FRONTPAGEIMAGE}}}
       }
     }
 
-    \AddToShipoutPicture*{\put(55, 270){\fontsize{20 pt}{22 pt} \KUbold \ASSIGNMENT}}
-    \AddToShipoutPicture*{\put(55, 242){\fontsize{14 pt}{16 pt} \KUsemibold \AUTHOR}}
+    \begin{textblock}{10}(1.14, 15.9)
+      \noindent\fontsize{20pt}{22pt}\KUbold\ASSIGNMENT
+      \par\vspace{4mm}
+      \noindent\fontsize{14pt}{16pt}\KUsemibold\AUTHOR
+    \end{textblock}
 
-    \AddToShipoutPicture*{\put(55, 188){\fontsize{22 pt}{24 pt} \KUsemibold \TITLE}}
-    \AddToShipoutPicture*{\put(55, 160){\fontsize{14 pt}{16 pt} \KUsemibold \SUBTITLE}}
+    \begin{textblock}{10}(1.14, 18.2)
+      \noindent\fontsize{22pt}{24pt}\KUsemibold\TITLE
+      \par\vspace{2mm}
+      \noindent\fontsize{14pt}{16pt}\KUsemibold\SUBTITLE
+    \end{textblock}
 
-    \AddToShipoutPicture*{\put(55, 85){\fontsize{11 pt}{12 pt} \KUsemibold \ADVISOR}}
-    \AddToShipoutPicture*{\put(55, 57){\fontsize{11 pt}{12 pt} \KUsemibold \DATE}}
+    \begin{textblock}{10}(1.14, 21.35)
+      \noindent\fontsize{11pt}{12pt}\KUsemibold\ADVISOR
+      \par\vspace{5mm}
+      \noindent\fontsize{11pt}{12pt}\KUsemibold\DATE
+    \end{textblock}
 
     \phantom{...}
     \newpage
@@ -123,7 +140,7 @@
 \if@kusmall
   \def\maketitle{
     \thispagestyle{plain}
-    \AddToShipoutPicture*{\put(35,  83){\includegraphics*[scale=0.88]{logos/ku-logo}}}
+    \AddToShipoutPicture*{\put(35,  83){\includegraphics*[scale=0.88]{logos/\KUFACULTY-logo}}}
     \AddToShipoutPicture*{\put(79, 755){\large{\textbf{\TITLE}}}}
     \AddToShipoutPicture*{\put(79, 733){\SUBTITLE}}
     \AddToShipoutPicture*{\put(79, 715){\small{\emph{\AUTHOR}}}}
@@ -137,7 +154,7 @@
 \if@kularge
   \def\maketitle{
     \thispagestyle{plain}
-    \AddToShipoutPicture*{\put(-220, -310){\includegraphics*[scale=1.4]{logos/ku-logo}}}
+    \AddToShipoutPicture*{\put(-220, -310){\includegraphics*[scale=1.4]{logos/\KUFACULTY-logo}}}
     \AddToShipoutPicture*{\put(79, 755){\LARGE{\textbf{\TITLE}}}}
     \AddToShipoutPicture*{\put(79, 723){\Large{\SUBTITLE}}}
     \AddToShipoutPicture*{\put(79, 695){\normalsize{\emph{\AUTHOR}}}}

@@ -1,0 +1,25 @@
+Preface: Pretty poor paper, pretty vague about a lot of descriptions.
+
+
+
+- Most mobile payment protocols are based on PKI (Public Key Infrastructure) which are inefficiently applied to wireless networks. Some of them are keeping information about the engaging parties' credit card on their mobile devices or used it in a transaction without protection, making it vulnerable to attack.
+- Lack of verification after a succesful transfer
+- Some mobile payment protocols are not worried about customer's privacy, where user information are revealed to the seller, the payment gateway and the banks
+
+Current protocols:
+- Secure Electronic Transaction (SET)
+-- Most famous credit card payment protocol
+-- request/response message pairs
+-- SET payment protocols are required to acquire public key certificates
+-- 5 steps: payment, initialization, purchase order, authorization, capture payment
+
+- Internet Key Protocol (iKP)
+-- Public key cryptography
+-- 1KP, 2KP, 3KP. The i indicates the number of principals that hold a keypair, the higher the greater leve of security. The principals are the customer, merchant and the payment gateway
+
+- KSL Payment Protocol
+-- Tellez et al and Kungpisdan et al. argued that SET and iKP are unsuitable for mobile payments because of their heavy computational operations and communications between them.
+-- Kungpisdan et al. enhanced SET and iKP by reducing the number of principals who posses own public key pairs. KSL consists of two subprotocols, which are merchant registration protocol and a payment protocol.
+
+
+Gave up here, very poor paper with a good implementation, refer to paper 11 instead.

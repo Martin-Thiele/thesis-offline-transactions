@@ -1,0 +1,5 @@
+http://www.customcardsystems.com/wp-content/uploads/2016/08/EMV_FAQ_ABnote-1.pdf
+
+
+
+Mentions the use of offline transactions and the introduction of eliptic curve cryptography (ECC)
