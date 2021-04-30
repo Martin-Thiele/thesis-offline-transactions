@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "OfJbEQBPyX7uXXtKbLzLp2hulv3pKiK2vov+4626tHX3oUTRrAdrtMgMxVb8LdCkngasFqv5soU07i8IRcc/Dg==",
+  "dgSpecHash": "IBOJbDvJjpvnFtoObS1YUcGx1FmAO72sld+vF+58b6OoCh+14L5On9GL1fCk9F/QiH8I/GCNzVWwoWjzOhNwKw==",
   "success": true,
-  "projectFilePath": "/home/thiele/Dropbox/KU/Master thesis/Code/kubank/kubank.csproj",
+  "projectFilePath": "/home/thiele/Dropbox/KU/Master thesis/Code/src/kubank.csproj",
   "expectedPackageFiles": [],
   "logs": []
 }

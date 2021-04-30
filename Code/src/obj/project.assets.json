@@ -13,11 +13,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/home/thiele/Dropbox/KU/Master thesis/Code/kubank/kubank.csproj",
+      "projectUniqueName": "/home/thiele/Dropbox/KU/Master thesis/Code/src/kubank.csproj",
       "projectName": "kubank",
-      "projectPath": "/home/thiele/Dropbox/KU/Master thesis/Code/kubank/kubank.csproj",
+      "projectPath": "/home/thiele/Dropbox/KU/Master thesis/Code/src/kubank.csproj",
       "packagesPath": "/home/thiele/.nuget/packages/",
-      "outputPath": "/home/thiele/Dropbox/KU/Master thesis/Code/kubank/obj/",
+      "outputPath": "/home/thiele/Dropbox/KU/Master thesis/Code/src/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "/home/thiele/.nuget/NuGet/NuGet.Config"

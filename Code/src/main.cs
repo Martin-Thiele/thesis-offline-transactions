@@ -59,27 +59,42 @@ namespace HttpListenerBank
         public static string pageData =
             "<html>" +
             "  <head>" +
+            " <style> " +
+            "   table {{border-collapse: collapse}}" +
+            "   #tTable {{min-width: 600px;}}" +
+            " table tr td {{border: solid 1px #C7C7C7;}}" +
+            " </style>" +
             "  </head>" +
             "  <body>" +
-            "    <p>Page Views: {0}</p>" +
-            "    <form method=\"post\" action=\"shutdown\">" +
-            "      <input type=\"submit\" value=\"Shutdown\" {1}>" +
+            "    {0}" + // account table
+            "    <br/><br/>"+
+            "    {1}" + // transaction table
+            "    <br/><br/><br/>" +
+            "    <form method=\"post\" action=\"reset\">" +
+            "      <input type=\"submit\" value=\"Reset\">" +
             "    </form>" +
             "  </body>" +
             "</html>";
 
 
         public static IList<User> userList = new List<User>() {
-            new User() { ID = 1, PhoneNumber = 12345678, Balance = 145, ActiveAgentEMoney = true, ActiveAgentCash = false, MaxAmountEMoney = 0, MaxAmountCash = 200, Pin = 1234} ,
-            new User() { ID = 2, PhoneNumber = 23345678, Balance = 205, ActiveAgentEMoney = false, ActiveAgentCash = false, MaxAmountEMoney = 0, MaxAmountCash = 0,  Pin = 1234} ,
-            new User() { ID = 3, PhoneNumber = 34345678, Balance = 250, ActiveAgentEMoney = false, ActiveAgentCash = false, MaxAmountEMoney = 0, MaxAmountCash = 0,  Pin = 1234} ,
-            new User() { ID = 4, PhoneNumber = 45345678, Balance = 300, ActiveAgentEMoney = false, ActiveAgentCash = false, MaxAmountEMoney = 0, MaxAmountCash = 0,  Pin = 1234} ,
-            new User() { ID = 5, PhoneNumber = 56345678, Balance = 350, ActiveAgentEMoney = false, ActiveAgentCash = false, MaxAmountEMoney = 0, MaxAmountCash = 0,  Pin = 1234}
         };
 
         public static IList<Transaction> transactionList = new List<Transaction>() {
-            new Transaction() { ID = 1, From = 1, To = 2, Amount = (decimal) 5m, Fee = (decimal) 1.0m, Type = "Deposit", Status = "Complete", Complete_time = DateTime.Now} // User 1 has deposited 5 GNF through User 2. In return user 1 has received 4.95 E-GNF
         };
+
+        private static void reset(){
+            userList = new List<User>(){
+                new User() { ID = 1, PhoneNumber = 12345678, Balance = 145, ActiveAgentEMoney = true, ActiveAgentCash = false, MaxAmountEMoney = 0, MaxAmountCash = 200, Pin = 1234} ,
+                new User() { ID = 2, PhoneNumber = 23345678, Balance = 205, ActiveAgentEMoney = false, ActiveAgentCash = false, MaxAmountEMoney = 0, MaxAmountCash = 0,  Pin = 1234} ,
+                new User() { ID = 3, PhoneNumber = 34345678, Balance = 250, ActiveAgentEMoney = false, ActiveAgentCash = false, MaxAmountEMoney = 0, MaxAmountCash = 0,  Pin = 1234} ,
+                new User() { ID = 4, PhoneNumber = 45345678, Balance = 300, ActiveAgentEMoney = false, ActiveAgentCash = false, MaxAmountEMoney = 0, MaxAmountCash = 0,  Pin = 1234} ,
+                new User() { ID = 5, PhoneNumber = 56345678, Balance = 350, ActiveAgentEMoney = false, ActiveAgentCash = false, MaxAmountEMoney = 0, MaxAmountCash = 0,  Pin = 1234}
+            };
+            transactionList = new List<Transaction>() {
+                new Transaction() { ID = 1, From = 1, To = 2, Amount = (decimal) 5m, Fee = (decimal) 1.0m, Type = "Deposit", Status = "Complete", Complete_time = DateTime.Now } // User 1 has deposited 5 GNF through User 2. In return user 1 has received 4.95 E-GNF
+           };
+        }
 
         int phonenumber = 0; // Phonenumber of incoming USSD message
         string session_id = ""; // unique id by USSD sandbox
@@ -226,12 +241,50 @@ namespace HttpListenerBank
             Console.WriteLine(GetBalance(23345678));
         }
 
+        private static string formatUserHtml(){
+            string ret = "<table id='uTable'><thead><tr><td><b>Phone number</b></td><td><b>Balance</b></td></tr></thead><tbody>";
+            foreach (var user in userList){
+                ret+=$"<tr><td>{user.PhoneNumber}</td><td>{user.Balance}</td></tr>";
+            }
+            ret+="</tbody></table>";
+            return ret;
+        }
+        private static string formatTransactionHtml(){
+            string ret = "<table id='tTable'><thead><tr>" +
+
+            "<td><b>ID</b></td>" +
+            "<td><b>From</b></td>" +
+            "<td><b>To</b></td>"+
+            "<td><b>Amount</b></td>"+
+            "<td><b>Fee</b></td>"+
+            "<td><b>Type</b></td>"+
+            "<td><b>Status</b></td>"+
+            "<td><b>Complete time</b></td>"+
+
+            "</tr></thead><tbody>";
+            foreach (var t in transactionList){
+                ret+=$"<tr>"+
+
+                $"<td>{t.ID}</td>"+
+                $"<td>{t.From}</td>" +
+                $"<td>{t.To}</td>" +
+                $"<td>{t.Amount}</td>" +
+                $"<td>{t.Fee}</td>" +
+                $"<td>{t.Type}</td>" +
+                $"<td>{t.Status}</td>" +
+                $"<td>{t.Complete_time}</td>" +
+
+                "</tr>";
+            }
+            ret+="</tbody></table>";
+            return ret;
+        }
+
         public static async Task HandleIncomingConnections()
         {
 
             bool runServer = true;
 
-            // While a user hasn't visited the `shutdown` url, keep on handling requests
             while (runServer)
             {
                 // Will wait here until we hear from a connection
@@ -257,19 +310,33 @@ namespace HttpListenerBank
                 // Handle post requests
                 if (req.HttpMethod == "POST")
                 {
-                    switch(req.Url.AbsolutePath)
-                    {
-                        case "/shutdown":
-                            Console.WriteLine("Shutdown requested");
-                            runServer = false;
-                            break;
+                    switch(req.Url.AbsolutePath){
+                        case "/reset":
+                        {
+                            Console.WriteLine("Reset accounts and transactions");
+                            reset();
+                            string response = "Reset accounts and transactions";
+                            await resp.OutputStream.WriteAsync(Encoding.UTF8.GetBytes(response, 0, response.Length));
+                            resp.Close();
+                        }
+                        break;
                         case "/USSD":
+                        {
                             // decode USSD message and call function here
-                            break;
-
+                        }
+                        break;
+                        case "/":
+                        {
+                            string response = "1: yes \n 2: no";
+                            await resp.OutputStream.WriteAsync(Encoding.UTF8.GetBytes(response, 0, response.Length));
+                            resp.Close();
+                        }
+                        break;
                         default:
-                            Console.WriteLine($"requested {req.Url.AbsolutePath} which doesn't exist");
-                            break;
+                            {
+                                Console.WriteLine($"requested {req.Url.AbsolutePath} which doesn't exist");
+                            }
+                        break;
 
                     }
                 }
@@ -281,8 +348,7 @@ namespace HttpListenerBank
                         {
 
                             // Write the response info
-                            string disableSubmit = !runServer ? "disabled" : "";
-                            byte[] data = Encoding.UTF8.GetBytes(String.Format(pageData, pageViews, disableSubmit));
+                            byte[] data = Encoding.UTF8.GetBytes(String.Format(pageData, formatUserHtml(), formatTransactionHtml()));
                             resp.ContentType = "text/html";
                             resp.ContentEncoding = Encoding.UTF8;
                             resp.ContentLength64 = data.LongLength;
@@ -323,53 +389,17 @@ namespace HttpListenerBank
         }
 
 
-        public static void SimpleListenerExample(string prefix)
-        {
-            if (!HttpListener.IsSupported)
-            {
-                Console.WriteLine ("Windows XP SP2 or Server 2003 is required to use the HttpListener class.");
-                return;
-            }
-            // URI prefixes are required,
-            // for example "http://contoso.com:8080/index/".
-            // Create a listener.
-            HttpListener listener = new HttpListener();
-            // Add the prefixes.
-            listener.Prefixes.Add(prefix);
-            listener.Start();
-            Console.WriteLine("Listening...");
-            // Note: The GetContext method blocks while waiting for a request.
-            HttpListenerContext context = listener.GetContext();
-            HttpListenerRequest request = context.Request;
-            // Obtain a response object.
-            HttpListenerResponse response = context.Response;
-            // Construct a response.
-            string responseString = "<HTML><BODY> Hello world!</BODY></HTML>";
-            byte[] buffer = System.Text.Encoding.UTF8.GetBytes(responseString);
-            // Get a response stream and write the response to it.
-            response.ContentLength64 = buffer.Length;
-            System.IO.Stream output = response.OutputStream;
-            output.Write(buffer,0,buffer.Length);
-            // You must close the output stream.
-            output.Close();
-            listener.Stop();
-        }
-
         public static void Main(string[] args)
         {
+            reset(); // reset bank and transactions
             if(port == null){
                 Console.WriteLine("no port found");
                 port = "5000";
             }
             string url = $"http://localhost:{port}/";
-            Console.WriteLine(port);
-            Console.WriteLine(url);
             // Create a Http server and start listening for incoming connections
             listener = new HttpListener();
-            listener.Prefixes.Add($"http://localhost:{port}/");
-            listener.Prefixes.Add($"http://127.0.0.1:{port}/");
-            // listener.Prefixes.Add($"http://kubank.herokuapp.com:{port}/");
-            // listener.Prefixes.Add($"http://kubank.herokuapp.com/");
+            listener.Prefixes.Add($"http://*:{port}/");
             listener.Start();
             Console.WriteLine("Listening for connections on {0}", url);
 
@@ -381,7 +411,6 @@ namespace HttpListenerBank
             listener.Close();
 
 
-            // SimpleListenerExample(url);
         }
     }
 }
