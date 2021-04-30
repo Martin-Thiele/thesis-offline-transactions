@@ -7,6 +7,7 @@ using System.Text;
 using System.Net;
 using System.Threading.Tasks;
 using System.Linq;
+using System.Net.Mime;
 using System.Collections.Generic;
 
 namespace HttpListenerBank
@@ -293,6 +294,10 @@ namespace HttpListenerBank
                 // Peel out the requests and response objects
                 HttpListenerRequest req = ctx.Request;
                 HttpListenerResponse resp = ctx.Response;
+                resp.ContentType = MediaTypeNames.Text.Plain;
+                resp.AddHeader("Access-Control-Allow-Headers", "Content-Type, Accept, X-Requested-With");
+                resp.AddHeader("Access-Control-Allow-Methods", "GET,POST");
+                resp.AddHeader("Access-Control-Allow-Origin", "*");
 
                 // Print out some info about the request
                 if (req.Url.AbsolutePath != "/favicon.ico"){
