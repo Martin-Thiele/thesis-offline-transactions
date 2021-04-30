@@ -106,9 +106,9 @@ namespace HttpListenerBank
 
         private static string UssdHelp(){
             string ret =
-            "139*1*2# for help regarding confirming transfers" +
-            "139*1*3# for help regarding declining transfers" +
-            "139*4# to see your balance" +
+            "1 - Help regarding confirming transfers" +
+            "2 - Help regarding declining transfers" +
+            "3 - 139*4# to see your balance" +
             "139*1*5# for help regarding your previous transactions" +
             "139*1*6# for help regarding transfers" +
             "139*1*7# for help regarding requesting money" +
@@ -318,21 +318,30 @@ namespace HttpListenerBank
                     switch(req.Url.AbsolutePath){
                         case "/reset":
                         {
-                            Console.WriteLine("Reset accounts and transactions");
-                            reset();
-                            string response = "Reset accounts and transactions";
-                            await resp.OutputStream.WriteAsync(Encoding.UTF8.GetBytes(response, 0, response.Length));
-                            resp.Close();
-                        }
-                        break;
-                        case "/USSD":
-                        {
-                            // decode USSD message and call function here
+                            if (!req.HasEntityBody)
+                            {
+                                Console.WriteLine("No client data was sent with the request.");
+                                string response = "Reset accounts and transactions";
+                                await resp.OutputStream.WriteAsync(Encoding.UTF8.GetBytes(response, 0, response.Length));
+                                resp.Close();
+                            } else{
+                                Stream body = req.InputStream;
+                                Encoding encoding = req.ContentEncoding;
+                                StreamReader reader = new System.IO.StreamReader(body, encoding);
+                                string s = reader.ReadToEnd();
+                                Console.WriteLine(s);
+
+                                Console.WriteLine("Reset accounts and transactions");
+                                reset();
+                                string response = "Reset accounts and transactions";
+                                await resp.OutputStream.WriteAsync(Encoding.UTF8.GetBytes(response, 0, response.Length));
+                                resp.Close();
+                            }
                         }
                         break;
                         case "/":
                         {
-                            string response = "1: yes \n 2: no";
+                            string response = "CON 1 - Help \n 2 - Transfer \n 3 \n 4 \n 5 \n 6 \n 7 \n 8 \n 9 \n 10 \n 11";
                             await resp.OutputStream.WriteAsync(Encoding.UTF8.GetBytes(response, 0, response.Length));
                             resp.Close();
                         }
