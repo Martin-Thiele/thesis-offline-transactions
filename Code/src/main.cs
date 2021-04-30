@@ -53,7 +53,7 @@ namespace HttpListenerBank
     class HttpServer
     {
         public static HttpListener listener;
-        public static string url = "http://localhost:8000/";
+        public static string port = System.Environment.GetEnvironmentVariable("PORT");
         public static int pageViews = 0;
         public static int requestCount = 0;
         public static string pageData =
@@ -166,6 +166,7 @@ namespace HttpListenerBank
                 var ts = transactionList.Where(t => t.From == user.ID || t.To == user.ID).ToList();
                 return (ts.Count, "", ts);
             } catch(Exception e){
+                Console.WriteLine(e);
                 return (-1, "No user with that phonenumber found", new List<Transaction>(){});
             }
         }
@@ -322,11 +323,53 @@ namespace HttpListenerBank
         }
 
 
+        public static void SimpleListenerExample(string prefix)
+        {
+            if (!HttpListener.IsSupported)
+            {
+                Console.WriteLine ("Windows XP SP2 or Server 2003 is required to use the HttpListener class.");
+                return;
+            }
+            // URI prefixes are required,
+            // for example "http://contoso.com:8080/index/".
+            // Create a listener.
+            HttpListener listener = new HttpListener();
+            // Add the prefixes.
+            listener.Prefixes.Add(prefix);
+            listener.Start();
+            Console.WriteLine("Listening...");
+            // Note: The GetContext method blocks while waiting for a request.
+            HttpListenerContext context = listener.GetContext();
+            HttpListenerRequest request = context.Request;
+            // Obtain a response object.
+            HttpListenerResponse response = context.Response;
+            // Construct a response.
+            string responseString = "<HTML><BODY> Hello world!</BODY></HTML>";
+            byte[] buffer = System.Text.Encoding.UTF8.GetBytes(responseString);
+            // Get a response stream and write the response to it.
+            response.ContentLength64 = buffer.Length;
+            System.IO.Stream output = response.OutputStream;
+            output.Write(buffer,0,buffer.Length);
+            // You must close the output stream.
+            output.Close();
+            listener.Stop();
+        }
+
         public static void Main(string[] args)
         {
+            if(port == null){
+                Console.WriteLine("no port found");
+                port = "5000";
+            }
+            string url = $"http://localhost:{port}/";
+            Console.WriteLine(port);
+            Console.WriteLine(url);
             // Create a Http server and start listening for incoming connections
             listener = new HttpListener();
-            listener.Prefixes.Add(url);
+            listener.Prefixes.Add($"http://localhost:{port}/");
+            listener.Prefixes.Add($"http://127.0.0.1:{port}/");
+            // listener.Prefixes.Add($"http://kubank.herokuapp.com:{port}/");
+            // listener.Prefixes.Add($"http://kubank.herokuapp.com/");
             listener.Start();
             Console.WriteLine("Listening for connections on {0}", url);
 
@@ -336,6 +379,9 @@ namespace HttpListenerBank
 
             // Close the listener
             listener.Close();
+
+
+            // SimpleListenerExample(url);
         }
     }
 }
