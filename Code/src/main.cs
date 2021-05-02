@@ -42,6 +42,21 @@ namespace HttpListenerBank
         public DateTime Complete_time { get; set; }
     }
 
+    // used for display purposes. When converting from and to to phone numbers and "you"
+    public class DTransaction
+    {
+        public int ID { get; set; }
+        public String From { get; set; }
+        public String To { get; set; }
+        public decimal Amount { get; set; }
+        public decimal Fee { get; set; } // percent
+        public string Type { get; set; } // Transfer, Depoit, Withdrawal
+        public string Status { get; set; } // 'Pending', 'Complete'
+        public string Reason { get; set; }
+        public DateTime Complete_time { get; set; }
+    }
+
+
     public static class LingExtension
     {
         public static IEnumerable<T> SetValue<T>(this IEnumerable<T> items, Action<T>updateMethod)
@@ -80,7 +95,7 @@ namespace HttpListenerBank
             "      <input type=\"submit\" value=\"Reset\">" +
             "    </form>" +
             "    <form method=\"post\" action=\"donate\">" +
-            "      <input type=\"submit\" value=\"donate 10 GNF to all users\">" +
+            "      <input type=\"submit\" value=\"donate 10 E-GNF to all users\">" +
             "    </form>" +
 
             "  </body>" +
@@ -176,12 +191,56 @@ namespace HttpListenerBank
             }
         }
 
-        private static (int, List<Transaction>) ListTransactions(int PhoneNumber, int offset){
+        private static (int, List<DTransaction>) ListTransactions(int PhoneNumber, int offset){
             try{
                 var user = userList.SingleOrDefault(u => u.PhoneNumber == PhoneNumber);
                 var ts = transactionList.Where(t => t.From == user.ID || t.To == user.ID).ToList();
                 ts = ts.Skip(offset).Take(5).ToList();
-                return (ts.Count, ts);
+                List<DTransaction> newts = new List<DTransaction>();
+                Dictionary<int, string> dp = new Dictionary<int, string>(); // convert user ids to phone number
+                foreach(var t in ts){
+                    DTransaction newT = new DTransaction() {ID = t.ID, From = null, To = null, Amount = t.Amount, Fee = t.Fee, Type = t.Type, Status = t.Status, Reason=t.Reason, Complete_time = t.Complete_time};
+                    // convert from ids to phone numbers
+                    if (t.From == user.ID){
+                        newT.From = "you";
+                    } else{
+                        if(dp.ContainsKey(t.From)){
+                            newT.From = dp[t.From];
+                        } else{
+                            User u = userList.SingleOrDefault(u => u.ID == t.From);
+                            if(u == null){
+                                Console.WriteLine($"Tried converting ID to phonenumber for user ID {t.From} but it failed");
+                            } else{
+                                dp.Add(t.From, u.PhoneNumber.ToString());
+                                newT.From = u.PhoneNumber.ToString();
+                            }
+
+                        }
+                    }
+
+
+                    // convert to ids to phone numbers
+                    if (t.To == user.ID){
+                        newT.To = "you";
+                    } else{
+                        if(dp.ContainsKey(t.To)){
+                            newT.To = dp[t.To];
+                        } else{
+                            User u = userList.SingleOrDefault(u => u.ID == t.To);
+                            if(u == null){
+                                Console.WriteLine($"Tried converting ID to phonenumber for user ID {t.To} but it failed");
+                            } else{
+                                dp.Add(t.To, u.PhoneNumber.ToString());
+                                newT.To = u.PhoneNumber.ToString();
+                            }
+
+                        }
+                    }
+
+
+                    newts.Add(newT);
+                }
+                return (newts.Count, newts);
             } catch(Exception e){
                 Console.WriteLine(e);
                 return (-1, null);
@@ -197,9 +256,12 @@ namespace HttpListenerBank
             if(to == null){
                 return (-1, "Recipient not found");
             }
+            if(tophone == fromphone){
+                return (-1, "Can't send E-GNF to yourself");
+            }
 
             int TCount = transactionList.Count;
-            Transaction newT = new Transaction() {ID = TCount+1, From = from.ID, To = to.ID, Amount = amount, Fee = fee, Type = type, Status = "Pending", Reason=reason, Complete_time = new DateTime()};
+            Transaction newT = new Transaction() {ID = TCount+1, From = from.ID, To = to.ID, Amount = amount, Fee = fee, Type = type, Status = "Pending", Reason=reason, Complete_time = DateTime.MinValue};
             try{
                 transactionList.Add(newT);
 
@@ -212,7 +274,7 @@ namespace HttpListenerBank
                 } else if(type == "Request"){
                     var ret = $"SMS -> ({from.PhoneNumber}) - User {to.PhoneNumber} has requested {amount-amount*fee} E-GNF";
                     if(reason != null){
-                        ret+=$"\nReason: \" {reason} \"";
+                        ret+=$". Reason: \" {reason} \"";
                     }
                     Console.WriteLine(ret);
                 }
@@ -339,6 +401,7 @@ namespace HttpListenerBank
             "<td><b>Fee</b></td>"+
             "<td><b>Sent</b></td>"+
             "<td><b>Received</b></td>"+
+            "<td><b>Reason</b></td>"+
             "<td><b>Type</b></td>"+
             "<td><b>Status</b></td>"+
             "<td><b>Complete time</b></td>"+
@@ -369,6 +432,7 @@ namespace HttpListenerBank
                 $"<td>{t.Fee}</td>" +
                 $"<td>{sentstr}</td>" +
                 $"<td>{recstr}</td>" +
+                $"<td>{t.Reason}</td>" +
                 $"<td>{t.Type}</td>" +
                 $"<td>{t.Status}</td>" +
                 $"<td>{t.Complete_time}</td>" +
@@ -395,7 +459,15 @@ namespace HttpListenerBank
 
         // USD
         public static string handleUSSD(Dictionary<String, String> data){
-            string reqText = data["text"];
+
+            string reqText = "";
+            if(data.ContainsKey("text")){
+                reqText = data["text"];
+            } else if(data.ContainsKey("input")){
+                reqText = data["input"];
+            } else{
+                return "END no form data could be found";
+            }
             int reqPhone = int.Parse(data["phoneNumber"].Remove(0,3)); // remove +45 for danish numbers. Good enough for proof of concept
             string[] sections = reqText.Split('*');
             string section = sections[0];
@@ -423,7 +495,7 @@ namespace HttpListenerBank
 
                     var (err, bal) = GetBalance(reqPhone);
                     if(err == 0){
-                        return $"END Your balance is: {bal.ToString()} GNF";
+                        return $"END Your balance is: {bal.ToString()} E-GNF";
                     } else{
                         return $"END Something went wrong. Have you signed up?";
                     }
@@ -436,12 +508,21 @@ namespace HttpListenerBank
                         if(amount == -1){
                             return $"END Something went wrong. Have you signed up?";
                         } else{
-                            string ret = $"END {"From - To - Amount - Fee - Type"} \n";
-                            foreach(var t in ts){
-                                Console.WriteLine($"{t.ID} - {t.Amount}");
-                                ret+=$"{t.From} - {t.To} - {t.Amount} - {t.Type}";
+                            if(amount == 0){
+                                return "END No transactions found";
+                            } else{
+                                string ret = "END "; //$"END {"From - To - Amount - Fee - Type"} \n";
+                                foreach(var t in ts){
+                                    if(t.Complete_time != DateTime.MinValue){
+                                        ret+=$"{t.Complete_time.ToString("dd-MM")} : ";
+                                    }
+                                    ret+=$"{t.From} -> {t.To}. {t.Amount} GNF ({t.Type}) [{t.Status}]"; // 02-05 : you -> 12345678. 1.23 GNF (Transfer) [Completed] "Cinema"
+                                    if(t.Reason != null){
+                                        ret+=$" \"{t.Reason}\"";
+                                    }
+                                }
+                                return ret;
                             }
-                            return ret;
                         }
                     }
                 case "4": // transfer
@@ -449,21 +530,21 @@ namespace HttpListenerBank
                         case 1:
                             return "CON please enter the phone number of the recipient";
                         case 2:
-                            return $"CON please enter the amount of GNF you'd like to send to {sections[1]}";
+                            return $"CON please enter the amount of E-GNF you'd like to send to {sections[1]}";
                         case 3:
                             return $"CON please enter the reason for the transfer. e.g. dinner or bill. Enter 0 if you'd like to not provide a reason";
                         case 4:
                             return $"CON please complete your transfer of {sections[2]} E-GNF to {sections[1]} by entering your PIN. Enter 0 to cancel";
                         case 5:
-                            if(sections[3] == "0"){
-                                return $"END you've declined the transfer of {sections[2]} GNF to {sections[1]}";
+                            if(sections[4] == "0"){
+                                return $"END you've declined the transfer of {sections[2]} E-GNF to {sections[1]}";
                             } else{
                                 int phone;
-                                int amount;
+                                decimal amount;
                                 int pin;
                                 string reason = sections[3];
                                 bool successPh = int.TryParse(sections[1], out phone);
-                                bool successAm = int.TryParse(sections[2], out amount);
+                                bool successAm = decimal.TryParse(sections[2], out amount);
                                 bool successPin = int.TryParse(sections[4], out pin);
                                 if(!successPh){
                                     return $"END {sections[1]} is not a valid phone number";
@@ -474,9 +555,9 @@ namespace HttpListenerBank
                                 if(!successPin){
                                     return $"END {sections[4]} is not a valid PIN";
                                 }
-
                                 var (id, msg) = Transfer(reqPhone, phone, amount, 0m, "Transfer", reason != "0" ? reason : null);
                                 if(id == -1){
+                                    transactionList.RemoveAt(id);
                                     return $"END {msg}";
                                 } else{
                                     var (err, msg2) = Confirm(reqPhone, id, pin);
@@ -484,7 +565,7 @@ namespace HttpListenerBank
                                         return $"END {msg2}";
                                     }
                                 }
-                                return $"END you've completed the transfer of {sections[2]} GNF to {sections[1]}";
+                                return $"END you've completed the transfer of {sections[2]} E-GNF to {sections[1]}";
                             }
                         default:
                             break;
@@ -493,16 +574,16 @@ namespace HttpListenerBank
                 case "5": // request
                     switch(reqlen){
                         case 1:
-                            return "CON please enter the phone number of the recipient";
+                            return "CON please enter the phone number of the person you'd like to request money from";
                         case 2:
-                            return $"CON please enter the amount of GNF you'd like to send to {sections[1]}";
+                            return $"CON please enter the amount of E-GNF you'd like to request from {sections[1]}";
                         case 3:
                             return $"CON please enter the reason for the transfer. e.g. dinner or bill. Enter 0 if you'd like to not provide a reason";
                         case 4:
                             int phone;
-                            int amount;
+                            decimal amount;
                             bool successPh = int.TryParse(sections[1], out phone);
-                            bool successAm = int.TryParse(sections[2], out amount);
+                            bool successAm = decimal.TryParse(sections[2], out amount);
                             string reason = sections[3];
                             if(!successPh){
                                 return $"END {sections[1]} is not a valid phone number";
@@ -512,6 +593,7 @@ namespace HttpListenerBank
                             }
                             var (id, msg) = Transfer(phone, reqPhone, amount, 0m, "Request", reason != "0" ? reason : null);
                             if(id == -1){
+                                    transactionList.RemoveAt(id);
                                     return $"END {msg}";
                             } else{
                                 return $"END you've requested {sections[2]} E-GNF from {sections[1]}";
@@ -617,9 +699,9 @@ namespace HttpListenerBank
                         break;
                         case "/donate":
                         {
-                            Console.WriteLine("funded all accounts 10 GNF");
+                            Console.WriteLine("funded all accounts 10 E-GNF");
                             userList.SetValue(u => u.Balance = u.Balance+10);
-                            string response = "All account balances have increased 10 GNF";
+                            string response = "All account balances have increased 10 E-GNF";
                             await resp.OutputStream.WriteAsync(Encoding.UTF8.GetBytes(response, 0, response.Length));
                             resp.Close();
                         }
@@ -645,7 +727,7 @@ namespace HttpListenerBank
                                     string[] kvPair = param.Split('=');
                                     string key = kvPair[0];
                                     string value = UrlDecode(kvPair[1]);
-                                    Console.WriteLine($"{key}: {value}");
+                                    // Console.WriteLine($"{key}: {value}");
                                     postParams.Add(key, value);
                                 }
 
@@ -677,7 +759,7 @@ namespace HttpListenerBank
                                     string[] kvPair = param.Split('=');
                                     string key = kvPair[0];
                                     string value = UrlDecode(kvPair[1]);
-                                    Console.WriteLine($"{key}: {value}");
+                                    // Console.WriteLine($"{key}: {value}");
                                     postParams.Add(key, value);
                                 }
 
