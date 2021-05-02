@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Linq;
 using System.Net.Mime;
 using System.Collections.Generic;
+using static System.Net.WebUtility;
 
 namespace HttpListenerBank
 {
@@ -21,6 +22,8 @@ namespace HttpListenerBank
         public decimal Balance { get; set; }
         public bool ActiveAgentEMoney {get; set;}
         public bool ActiveAgentCash {get; set;}
+        public decimal EMoneyFee {get; set;}
+        public decimal CashFee {get; set;}
         public decimal MaxAmountEMoney {get; set;}
         public decimal MaxAmountCash {get; set;}
         public int Pin {get; set;} // Encrypt this in a real scenario
@@ -35,6 +38,7 @@ namespace HttpListenerBank
         public decimal Fee { get; set; } // percent
         public string Type { get; set; } // Transfer, Depoit, Withdrawal
         public string Status { get; set; } // 'Pending', 'Complete'
+        public string Reason { get; set; }
         public DateTime Complete_time { get; set; }
     }
 
@@ -56,13 +60,14 @@ namespace HttpListenerBank
         public static HttpListener listener;
         public static string port = System.Environment.GetEnvironmentVariable("PORT");
         public static int pageViews = 0;
+        public static bool showRequestInfo = false;
         public static int requestCount = 0;
         public static string pageData =
             "<html>" +
             "  <head>" +
             " <style> " +
             "   table {{border-collapse: collapse}}" +
-            "   #tTable {{min-width: 600px;}}" +
+            "   #tTable {{min-width: 900px;}}" +
             " table tr td {{border: solid 1px #C7C7C7;}}" +
             " </style>" +
             "  </head>" +
@@ -74,92 +79,86 @@ namespace HttpListenerBank
             "    <form method=\"post\" action=\"reset\">" +
             "      <input type=\"submit\" value=\"Reset\">" +
             "    </form>" +
+            "    <form method=\"post\" action=\"donate\">" +
+            "      <input type=\"submit\" value=\"donate 10 GNF to all users\">" +
+            "    </form>" +
+
             "  </body>" +
             "</html>";
 
 
-        public static IList<User> userList = new List<User>() {
+        public static List<User> userList = new List<User>() {
         };
 
-        public static IList<Transaction> transactionList = new List<Transaction>() {
+        public static List<Transaction> transactionList = new List<Transaction>() {
         };
 
         private static void reset(){
             userList = new List<User>(){
-                new User() { ID = 1, PhoneNumber = 12345678, Balance = 145, ActiveAgentEMoney = true, ActiveAgentCash = false, MaxAmountEMoney = 0, MaxAmountCash = 200, Pin = 1234} ,
-                new User() { ID = 2, PhoneNumber = 23345678, Balance = 205, ActiveAgentEMoney = false, ActiveAgentCash = false, MaxAmountEMoney = 0, MaxAmountCash = 0,  Pin = 1234} ,
-                new User() { ID = 3, PhoneNumber = 34345678, Balance = 250, ActiveAgentEMoney = false, ActiveAgentCash = false, MaxAmountEMoney = 0, MaxAmountCash = 0,  Pin = 1234} ,
-                new User() { ID = 4, PhoneNumber = 45345678, Balance = 300, ActiveAgentEMoney = false, ActiveAgentCash = false, MaxAmountEMoney = 0, MaxAmountCash = 0,  Pin = 1234} ,
-                new User() { ID = 5, PhoneNumber = 56345678, Balance = 350, ActiveAgentEMoney = false, ActiveAgentCash = false, MaxAmountEMoney = 0, MaxAmountCash = 0,  Pin = 1234}
+                new User() { ID = 1, PhoneNumber = 12345678, Balance = 100.0m, ActiveAgentEMoney = false, ActiveAgentCash = false, MaxAmountEMoney = 0, CashFee = 0.1m, EMoneyFee = 0.1m, MaxAmountCash = 0, Pin = 1234} ,
+                new User() { ID = 2, PhoneNumber = 87654321, Balance = 100.0m, ActiveAgentEMoney = true, ActiveAgentCash = true, MaxAmountEMoney = 200, CashFee = 0.1m, EMoneyFee = 0.1m, MaxAmountCash = 200,  Pin = 1234} ,
             };
             transactionList = new List<Transaction>() {
-                new Transaction() { ID = 1, From = 1, To = 2, Amount = (decimal) 5m, Fee = (decimal) 1.0m, Type = "Deposit", Status = "Complete", Complete_time = DateTime.Now } // User 1 has deposited 5 GNF through User 2. In return user 1 has received 4.95 E-GNF
+                // new Transaction() { ID = 1, From = 1, To = 2, Amount = (decimal) 5m, Fee = (decimal) 1.0m, Type = "Deposit", Status = "Complete", Reason = null, Complete_time = DateTime.Now } // User 1 has deposited 5 GNF through User 2. In return user 1 has received 4.95 E-GNF
            };
         }
 
-        int phonenumber = 0; // Phonenumber of incoming USSD message
-        string session_id = ""; // unique id by USSD sandbox
-        string service_code = ""; // USSD code by USSD sandbox
-        string text = ""; // the text send by the user through the USSD sandbox
 
 
-
-        private static string UssdHelp(){
-            string ret =
-            "1 - Help regarding confirming transfers" +
-            "2 - Help regarding declining transfers" +
-            "3 - 139*4# to see your balance" +
-            "139*1*5# for help regarding your previous transactions" +
-            "139*1*6# for help regarding transfers" +
-            "139*1*7# for help regarding requesting money" +
-            "139*1*8# for help regarding agent transfers" +
-            "139*1*9# for help regarding requesting money as an agent" +
-            "139*1*10# for help regarding becoming an agent providing e-money" +
-            "139*1*11# for help regarding becoming an agent providing cash" +
-            "139*1*12# for help regarding how to signup";
-            return ret;
-        }
-
-        private static string Confirm(int PhoneNumber, int id, int pin){
+        private static (int, string) Confirm(int PhoneNumber, int id, int pin){
             // Find user id
-            var user = userList.Single(u => u.PhoneNumber == PhoneNumber);
+            var user = userList.SingleOrDefault(u => u.PhoneNumber == PhoneNumber);
             if(user == null){
-                return "No user with that phonenumber found";
+                return (-1, "No user with that phonenumber found");
             }
             // Check if correct pin
             if(user.Pin != pin){
-                return "Incorrect pin code";
+                return (-1, "Incorrect pin code");
             }
 
             // Fetch transaction
             try{
-                Transaction transaction = transactionList.Single(t => t.From == user.ID && t.Status == "Pending" && t.ID == id);
-                decimal toTransfer = transaction.Amount - transaction.Amount * transaction.Fee;
+                Transaction transaction = transactionList.SingleOrDefault(t => t.From == user.ID && t.Status == "Pending" && t.ID == id);
+                decimal toTransfer = 0m;
+                if (transaction.Type == "Withdrawal"){
+                    toTransfer = transaction.Amount;
+                } else{
+                    toTransfer = transaction.Amount - transaction.Amount * transaction.Fee;
+                }
                 if(user.Balance < toTransfer){
-                    return "Invalid funds available to complete transfer";
+                    return (-1, "Invalid funds available to complete transfer");
                 }
 
 
                 // Do transfer
                 // Not ACID-proof but for a concept it should be fine
-                userList.Where(u => u.ID == transaction.From).SetValue(u => u.Balance = u.Balance - toTransfer);
-                userList.Where(u => u.ID == transaction.To).SetValue(u => u.Balance = u.Balance + toTransfer);
+                if (transaction.Type == "Withdrawal"){
+                    // A user would like to withdraw 10 E-GNF worth cash. In order to do so he transfers 10 E-GNF and in return gets 10-10*fee GNF in cash
+                    userList.Where(u => u.ID == transaction.From).SetValue(u => u.Balance = u.Balance - transaction.Amount);
+                    userList.Where(u => u.ID == transaction.To).SetValue(u => u.Balance = u.Balance + transaction.Amount);
+                } else{
+                    userList.Where(u => u.ID == transaction.From).SetValue(u => u.Balance = u.Balance - toTransfer);
+                    userList.Where(u => u.ID == transaction.To).SetValue(u => u.Balance = u.Balance + toTransfer);
+                }
 
                 // Update order to complete
                 transactionList.Where(t => t.ID == transaction.ID).SetValue(t => t.Status = "Complete").SetValue(t => t.Complete_time = DateTime.Now);
 
-                return "Success";
+                return (0, "Success");
             } catch(Exception e){
                 Console.WriteLine(e);
-                return "Operation failed";
+                return (-1, "Operation failed");
             }
 
         }
 
-        private static string Decline(int PhoneNumber, int id){
-            var user = userList.Single(u => u.PhoneNumber == PhoneNumber);
+        private static string Decline(int PhoneNumber, int id, int pin){
+            var user = userList.SingleOrDefault(u => u.PhoneNumber == PhoneNumber);
             if(user == null){
                 return "No user with that phonenumber found";
+            }
+            if(user.Pin != pin){
+                return "Incorrect pin code";
             }
             // Fetch transaction
             transactionList.Where(t => t.From == user.ID && t.Status == "Pending" && t.ID == id).SetValue(t => t.Status = "Declined").SetValue(t => t.Complete_time = DateTime.Now);
@@ -167,44 +166,60 @@ namespace HttpListenerBank
 
         }
 
-        private static decimal GetBalance(int PhoneNumber){
-            var item = userList.Single(u => u.PhoneNumber == PhoneNumber);
-            if(item != null){
-                return item.Balance;
-            } else{
-                return 0m;
+        private static (int, decimal) GetBalance(int PhoneNumber){
+            var user = userList.SingleOrDefault(u => u.PhoneNumber == PhoneNumber);
+            if(user == null){
+                return (-1, 0m);
+            }
+            else {
+                return (0, user.Balance);
             }
         }
 
-        private static (int, string, IList<Transaction>) ListTransactions(int PhoneNumber){
+        private static (int, List<Transaction>) ListTransactions(int PhoneNumber, int offset){
             try{
-                var user = userList.Single(u => u.PhoneNumber == PhoneNumber);
+                var user = userList.SingleOrDefault(u => u.PhoneNumber == PhoneNumber);
                 var ts = transactionList.Where(t => t.From == user.ID || t.To == user.ID).ToList();
-                return (ts.Count, "", ts);
+                ts = ts.Skip(offset).Take(5).ToList();
+                return (ts.Count, ts);
             } catch(Exception e){
                 Console.WriteLine(e);
-                return (-1, "No user with that phonenumber found", new List<Transaction>(){});
+                return (-1, null);
             }
         }
 
-        private static (int, string) Transfer(int fromphone, int tophone, decimal amount, decimal fee, string type){
-            var from = userList.Single(u => u.PhoneNumber == fromphone);
+        private static (int, string) Transfer(int fromphone, int tophone, decimal amount, decimal fee, string type, string reason){
+            var from = userList.SingleOrDefault(u => u.PhoneNumber == fromphone);
             if(from == null){
                 return (-1, "Sender not found");
             }
-            var to = userList.Single(u => u.PhoneNumber == tophone);
+            var to = userList.SingleOrDefault(u => u.PhoneNumber == tophone);
             if(to == null){
                 return (-1, "Recipient not found");
             }
 
             int TCount = transactionList.Count;
-            Transaction newT = new Transaction() {ID = TCount+1, From = from.ID, To = to.ID, Amount = amount, Fee = fee, Type = type, Status = "Pending", Complete_time = new DateTime()};
+            Transaction newT = new Transaction() {ID = TCount+1, From = from.ID, To = to.ID, Amount = amount, Fee = fee, Type = type, Status = "Pending", Reason=reason, Complete_time = new DateTime()};
             try{
-                transactionList.Insert(TCount, newT);
+                transactionList.Add(newT);
+
+                // Notify agent
+                if (type == "Withdrawal"){
+                    // Should be an SMS
+                    Console.WriteLine($"SMS -> ({to.PhoneNumber}) - User {from.PhoneNumber} has requested {amount-amount*fee} GNF in exchange for {amount} E-GNF");
+                } else if(type == "Deposit"){
+                    Console.WriteLine($"SMS -> ({from.PhoneNumber}) - User {to.PhoneNumber} has requested {amount-amount*fee} E-GNF in exchange for {amount} GNF");
+                } else if(type == "Request"){
+                    var ret = $"SMS -> ({from.PhoneNumber}) - User {to.PhoneNumber} has requested {amount-amount*fee} E-GNF";
+                    if(reason != null){
+                        ret+=$"\nReason: \" {reason} \"";
+                    }
+                    Console.WriteLine(ret);
+                }
             } catch(Exception e){
                 Console.WriteLine(e);
             }
-            return (TCount+1, $"Please confirm or decline the transfer of {amount} GNF to {tophone}");
+            return (TCount+1, "");
         }
 
         // The agent marks themselves as available to transfer cash
@@ -216,54 +231,135 @@ namespace HttpListenerBank
             return 0;
         }
 
-        private static IList<User> ListAgents(){
+        private static List<User> ListAgents(){
             return new List<User>(){};
         }
 
-        private static int NewUser(int pin){
-            int UserCount = userList.Count;
-            User newU = new User() {ID = UserCount+1, Balance = 0, ActiveAgentEMoney = false, ActiveAgentCash = false, MaxAmountEMoney = 0, MaxAmountCash = 0, Pin = pin};
-            userList.Insert(UserCount+1, newU);
-            return 0;
+        private static int NewUser(int pin, int phone){
+            try{
+                var user = userList.SingleOrDefault(u => u.PhoneNumber == phone);
+                if(user != null){
+                    Console.WriteLine($"user ({phone}) already exists");
+                    return -1;
+                } else{
+                    int UserCount = userList.Count;
+                    User newU = new User() {ID = UserCount+1, PhoneNumber = phone, Balance = 0, ActiveAgentEMoney = false, ActiveAgentCash = false, MaxAmountEMoney = 0, MaxAmountCash = 0, Pin = pin};
+                    userList.Add(newU);
+                    return 0;
+                }
+            } catch(Exception e){
+                Console.WriteLine(e);
+                return -1;
+            }
         }
 
         private static void testTransfer(){
-            Console.WriteLine(GetBalance(12345678));
-            Console.WriteLine(GetBalance(23345678));
-            var (id, msg) = Transfer(12345678, 23345678, 5m, 0m, "Transfer");
-            var (id2, msg2) = Transfer(12345678, 23345678, 5m, 0m, "Transfer");
-            var (id3, msg3) = Transfer(12345678, 23345678, 5m, 0.05m, "Deposit");
-            var (id4, msg4) = Transfer(12345678, 23345678, 5m, 0m, "Transfer");
-            Confirm(12345678, id3, 1234);
-            Confirm(12345678, id, 1234);
-            Decline(12345678, id2);
-            Decline(12345678, id4);
-            Console.WriteLine(GetBalance(12345678));
-            Console.WriteLine(GetBalance(23345678));
+            // Transfer
+            bool testTransfer = true;
+            bool testDeposit = true;
+            bool testWithdraw = true;
+
+            if(testTransfer){
+                var (id, _) = Transfer(12345678, 87654321, 5m, 0.00m, "Transfer", "For dinner tonight :)");
+                var (_, balgiver) = GetBalance(12345678);
+                var (_, balrecipient) = GetBalance(87654321);
+                Confirm(12345678, id, 1234);
+                decimal expectedGiver = balgiver - 5m;
+                decimal expectedRecipient = balrecipient + 5m;
+                var (_, balgiver2) = GetBalance(12345678);
+                var (_, balrecipient2) = GetBalance(87654321);
+                if (balrecipient2 == expectedRecipient && balgiver2 == expectedGiver){
+                    Console.WriteLine("Test (Transfer) - Passed");
+                } else{
+                    Console.WriteLine("Test (Transfer) - Failed");
+                    Console.WriteLine($"Expected: {expectedRecipient} & {expectedGiver}");
+                    Console.WriteLine($"Got {balrecipient2} & {balgiver2}");
+                }
+            }
+
+
+            // Deposit
+            if(testDeposit){
+                decimal amount = 10m;
+                decimal fee = 0.05m;
+                var (b1, baluser) = GetBalance(12345678);
+                var (b2, balagent) = GetBalance(87654321);
+                var (id, _) = Transfer(87654321, 12345678, amount, fee, "Deposit", null);
+                Confirm(87654321, id, 1234);
+                var (b5, baldepositUser) = GetBalance(12345678);
+                var (b6, baldepositAgent) = GetBalance(87654321);
+                decimal expectedUser = baluser + (amount-(amount*fee));
+                decimal expectedAgent = balagent - (amount-(amount*fee));
+                if (baldepositAgent == expectedAgent && baldepositUser == expectedUser){
+                    Console.WriteLine("Test (Deposit) - Passed");
+                } else{
+                    Console.WriteLine("Test (Deposit) - Failed");
+                    Console.WriteLine($"Expected: {expectedAgent} & {expectedUser}");
+                    Console.WriteLine($"Got {baldepositAgent} & {baldepositUser}");
+                }
+            }
+
+            // Withdrawal
+            if(testWithdraw){
+                decimal amount = 10m;
+                decimal fee = 0.05m;
+                var (_, baluser) = GetBalance(12345678);
+                var (_, balagent) = GetBalance(87654321);
+                var (id, _) = Transfer(12345678, 87654321, amount, fee, "Withdrawal", null);
+                Confirm(12345678, id, 1234);
+                var (_, baldepositUser) = GetBalance(12345678);
+                var (_, baldepositAgent) = GetBalance(87654321);
+                decimal expectedUser = baluser - amount;
+                decimal expectedAgent = balagent + amount;
+                if (baldepositAgent == expectedAgent && baldepositUser == expectedUser){
+                    Console.WriteLine("Test (Withdrawal) - Passed");
+                } else{
+                    Console.WriteLine("Test (Withdrawal) - Failed");
+                    Console.WriteLine($"Expected: {expectedAgent} & {expectedUser}");
+                    Console.WriteLine($"Got {baldepositAgent} & {baldepositUser}");
+                }
+            }
         }
 
         private static string formatUserHtml(){
-            string ret = "<table id='uTable'><thead><tr><td><b>Phone number</b></td><td><b>Balance</b></td></tr></thead><tbody>";
+            string ret = "<h1>Users</h1><table id='uTable'><thead><tr><td><b>ID</b></td><td><b>Phone number</b></td><td><b>Balance</b></td></tr></thead><tbody>";
             foreach (var user in userList){
-                ret+=$"<tr><td>{user.PhoneNumber}</td><td>{user.Balance}</td></tr>";
+                ret+=$"<tr><td>{user.ID}</td><td>{user.PhoneNumber}</td><td>{user.Balance}</td></tr>";
             }
             ret+="</tbody></table>";
             return ret;
         }
         private static string formatTransactionHtml(){
-            string ret = "<table id='tTable'><thead><tr>" +
+            string ret = "<h1>Transactions</h1><table id='tTable'><thead><tr>" +
 
             "<td><b>ID</b></td>" +
             "<td><b>From</b></td>" +
             "<td><b>To</b></td>"+
             "<td><b>Amount</b></td>"+
             "<td><b>Fee</b></td>"+
+            "<td><b>Sent</b></td>"+
+            "<td><b>Received</b></td>"+
             "<td><b>Type</b></td>"+
             "<td><b>Status</b></td>"+
             "<td><b>Complete time</b></td>"+
 
             "</tr></thead><tbody>";
             foreach (var t in transactionList){
+                decimal sent = t.Amount - t.Amount*t.Fee;
+                decimal received = 0.00m;
+                string sentstr = "";
+                string recstr = "";
+                if(t.Type == "Deposit"){
+                    sentstr = $"{(t.Amount - (t.Amount*t.Fee))} E-GNF";
+                    recstr = $"{t.Amount} GNF";
+                } else if(t.Type == "Withdrawal"){
+                    sentstr = $"{t.Amount} E-GNF";
+                    recstr = $"{(t.Amount - (t.Amount*t.Fee))} GNF";
+                } else{
+                    sentstr = $"{sent} E-GNF";
+                    recstr = $"{received} GNF";
+                }
+
                 ret+=$"<tr>"+
 
                 $"<td>{t.ID}</td>"+
@@ -271,6 +367,8 @@ namespace HttpListenerBank
                 $"<td>{t.To}</td>" +
                 $"<td>{t.Amount}</td>" +
                 $"<td>{t.Fee}</td>" +
+                $"<td>{sentstr}</td>" +
+                $"<td>{recstr}</td>" +
                 $"<td>{t.Type}</td>" +
                 $"<td>{t.Status}</td>" +
                 $"<td>{t.Complete_time}</td>" +
@@ -281,6 +379,199 @@ namespace HttpListenerBank
             return ret;
         }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        // USD
+        public static string handleUSSD(Dictionary<String, String> data){
+            string reqText = data["text"];
+            int reqPhone = int.Parse(data["phoneNumber"].Remove(0,3)); // remove +45 for danish numbers. Good enough for proof of concept
+            string[] sections = reqText.Split('*');
+            string section = sections[0];
+            int reqlen = sections.Length;
+            switch(section){
+                case "":
+                    string response = "CON "+
+                         "1 - Help \n"+
+                         "2 - Check balance \n"+
+                         "3 - List transaction \n" +
+                         "4 - Transfer money \n"+
+                         "5 - Request money \n"+
+                         "6 - Deposit money \n"+
+                         "7 - Withdraw money \n"+
+                         "8 - Confirm transfer \n"+
+                         "9 - Decline transfer \n"+
+                         "10 - Deliver e-money \n"+
+                         "11 - Deliver cash \n"+
+                         "12 - Sign up";
+                    return response;
+                case "1": // help
+                    break;
+                case "2": // balance
+                {
+
+                    var (err, bal) = GetBalance(reqPhone);
+                    if(err == 0){
+                        return $"END Your balance is: {bal.ToString()} GNF";
+                    } else{
+                        return $"END Something went wrong. Have you signed up?";
+                    }
+                }
+                case "3": // list transactions
+                    if(reqlen == 1){
+                        return "CON please enter the order offset. 0 if you would like to see the 5 latest transactions. 5 if you'd like to see the 5 afterwards, 10 for the following 5 and so on.";
+                    } else{
+                        var (amount, ts) = ListTransactions(reqPhone, int.Parse(sections[1]));
+                        if(amount == -1){
+                            return $"END Something went wrong. Have you signed up?";
+                        } else{
+                            string ret = $"END {"From - To - Amount - Fee - Type"} \n";
+                            foreach(var t in ts){
+                                Console.WriteLine($"{t.ID} - {t.Amount}");
+                                ret+=$"{t.From} - {t.To} - {t.Amount} - {t.Type}";
+                            }
+                            return ret;
+                        }
+                    }
+                case "4": // transfer
+                    switch(reqlen){
+                        case 1:
+                            return "CON please enter the phone number of the recipient";
+                        case 2:
+                            return $"CON please enter the amount of GNF you'd like to send to {sections[1]}";
+                        case 3:
+                            return $"CON please enter the reason for the transfer. e.g. dinner or bill. Enter 0 if you'd like to not provide a reason";
+                        case 4:
+                            return $"CON please complete your transfer of {sections[2]} E-GNF to {sections[1]} by entering your PIN. Enter 0 to cancel";
+                        case 5:
+                            if(sections[3] == "0"){
+                                return $"END you've declined the transfer of {sections[2]} GNF to {sections[1]}";
+                            } else{
+                                int phone;
+                                int amount;
+                                int pin;
+                                string reason = sections[3];
+                                bool successPh = int.TryParse(sections[1], out phone);
+                                bool successAm = int.TryParse(sections[2], out amount);
+                                bool successPin = int.TryParse(sections[4], out pin);
+                                if(!successPh){
+                                    return $"END {sections[1]} is not a valid phone number";
+                                }
+                                if(!successAm){
+                                    return $"END {sections[2]} is not a valid amount";
+                                }
+                                if(!successPin){
+                                    return $"END {sections[4]} is not a valid PIN";
+                                }
+
+                                var (id, msg) = Transfer(reqPhone, phone, amount, 0m, "Transfer", reason != "0" ? reason : null);
+                                if(id == -1){
+                                    return $"END {msg}";
+                                } else{
+                                    var (err, msg2) = Confirm(reqPhone, id, pin);
+                                    if(err == -1){
+                                        return $"END {msg2}";
+                                    }
+                                }
+                                return $"END you've completed the transfer of {sections[2]} GNF to {sections[1]}";
+                            }
+                        default:
+                            break;
+                    }
+                    break;
+                case "5": // request
+                    switch(reqlen){
+                        case 1:
+                            return "CON please enter the phone number of the recipient";
+                        case 2:
+                            return $"CON please enter the amount of GNF you'd like to send to {sections[1]}";
+                        case 3:
+                            return $"CON please enter the reason for the transfer. e.g. dinner or bill. Enter 0 if you'd like to not provide a reason";
+                        case 4:
+                            int phone;
+                            int amount;
+                            bool successPh = int.TryParse(sections[1], out phone);
+                            bool successAm = int.TryParse(sections[2], out amount);
+                            string reason = sections[3];
+                            if(!successPh){
+                                return $"END {sections[1]} is not a valid phone number";
+                            }
+                            if(!successAm){
+                                return $"END {sections[2]} is not a valid amount";
+                            }
+                            var (id, msg) = Transfer(phone, reqPhone, amount, 0m, "Request", reason != "0" ? reason : null);
+                            if(id == -1){
+                                    return $"END {msg}";
+                            } else{
+                                return $"END you've requested {sections[2]} E-GNF from {sections[1]}";
+                            }
+                    }
+                    break;
+                case "6": // deposit
+                    break;
+                case "7": // withdraw
+                    break;
+                case "8": // confirm
+                    break;
+                case "9": // decline
+                    break;
+                case "10": // Mark agent as active for e-money
+                    break;
+                case "11": // Mark agent as active for cash
+                    break;
+                case "12": // Signup
+                    if(reqlen == 1){
+                        return "CON please enter a safe PIN number greater than 3 characters";
+                    } else{
+                        if(sections[1].Length < 4){
+                            return $"END your PIN was too short. Please start over";
+                        }
+                        int err = NewUser(int.Parse(sections[1]), reqPhone);
+                        if(err == 0){
+                            return $"END you've signed up to the service. Your PIN is {sections[1]}";
+                        } else{
+                            return $"END you couldn't be registered. Perhaps you're already a user?";
+                        }
+                    }
+                default:
+                    break;
+            }
+            return $"END invalid input: {section}";
+        }
+
+
+
+
+
+
+
+        // Android support
+        public static string handleAndroid(Dictionary<String, String> data){
+            // TODO: See if you can rewrite ussd to also handle android first
+            return "";
+        }
+
+
+
+
+
+
+
+
+
+
+        // Run server
         public static async Task HandleIncomingConnections()
         {
 
@@ -300,12 +591,11 @@ namespace HttpListenerBank
                 resp.AddHeader("Access-Control-Allow-Origin", "*");
 
                 // Print out some info about the request
-                if (req.Url.AbsolutePath != "/favicon.ico"){
+                if (req.Url.AbsolutePath != "/favicon.ico" && showRequestInfo){
                     Console.WriteLine("Request #: {0}", ++requestCount);
                     Console.WriteLine(req.Url.ToString());
                     Console.WriteLine(req.HttpMethod);
                     Console.WriteLine();
-
                 }
 
                 // Make sure we don't increment the page views counter if `favicon.ico` is requested
@@ -318,33 +608,84 @@ namespace HttpListenerBank
                     switch(req.Url.AbsolutePath){
                         case "/reset":
                         {
-                            if (!req.HasEntityBody)
-                            {
-                                Console.WriteLine("No client data was sent with the request.");
-                                string response = "Reset accounts and transactions";
-                                await resp.OutputStream.WriteAsync(Encoding.UTF8.GetBytes(response, 0, response.Length));
-                                resp.Close();
-                            } else{
-                                Stream body = req.InputStream;
-                                Encoding encoding = req.ContentEncoding;
-                                StreamReader reader = new System.IO.StreamReader(body, encoding);
-                                string s = reader.ReadToEnd();
-                                Console.WriteLine(s);
-
                                 Console.WriteLine("Reset accounts and transactions");
                                 reset();
                                 string response = "Reset accounts and transactions";
                                 await resp.OutputStream.WriteAsync(Encoding.UTF8.GetBytes(response, 0, response.Length));
                                 resp.Close();
-                            }
                         }
                         break;
-                        case "/":
+                        case "/donate":
                         {
-                            string response = "CON 1 - Help \n 2 - Transfer \n 3 \n 4 \n 5 \n 6 \n 7 \n 8 \n 9 \n 10 \n 11";
+                            Console.WriteLine("funded all accounts 10 GNF");
+                            userList.SetValue(u => u.Balance = u.Balance+10);
+                            string response = "All account balances have increased 10 GNF";
                             await resp.OutputStream.WriteAsync(Encoding.UTF8.GetBytes(response, 0, response.Length));
                             resp.Close();
                         }
+                        break;
+                        case "/ussd":
+                        {
+                            if (!req.HasEntityBody)
+                            {
+                                Console.WriteLine("No form data was found");
+                                string response = "Please provide data when making a request";
+                                await resp.OutputStream.WriteAsync(Encoding.UTF8.GetBytes(response, 0, response.Length));
+                                resp.Close();
+                            } else{
+                                // get post data
+                                Dictionary<string, string> postParams = new Dictionary<string, string>();
+                                Stream body = req.InputStream;
+                                Encoding encoding = req.ContentEncoding;
+                                StreamReader reader = new System.IO.StreamReader(body, encoding);
+                                string rawData = reader.ReadToEnd();
+                                string[] rawParams = rawData.Split('&');
+                                foreach (string param in rawParams)
+                                {
+                                    string[] kvPair = param.Split('=');
+                                    string key = kvPair[0];
+                                    string value = UrlDecode(kvPair[1]);
+                                    Console.WriteLine($"{key}: {value}");
+                                    postParams.Add(key, value);
+                                }
+
+                                // handle ussd codes
+                                string response = handleUSSD(postParams);
+                                await resp.OutputStream.WriteAsync(Encoding.UTF8.GetBytes(response, 0, response.Length));
+                                resp.Close();
+                            }
+                        }
+                        break;
+                        case "/android":
+                        {
+                            if (!req.HasEntityBody)
+                            {
+                                Console.WriteLine("No form data was found");
+                                string response = "Please provide data when making a request";
+                                await resp.OutputStream.WriteAsync(Encoding.UTF8.GetBytes(response, 0, response.Length));
+                                resp.Close();
+                            } else{
+                                // get post data
+                                Dictionary<string, string> postParams = new Dictionary<string, string>();
+                                Stream body = req.InputStream;
+                                Encoding encoding = req.ContentEncoding;
+                                StreamReader reader = new System.IO.StreamReader(body, encoding);
+                                string rawData = reader.ReadToEnd();
+                                string[] rawParams = rawData.Split('&');
+                                foreach (string param in rawParams)
+                                {
+                                    string[] kvPair = param.Split('=');
+                                    string key = kvPair[0];
+                                    string value = UrlDecode(kvPair[1]);
+                                    Console.WriteLine($"{key}: {value}");
+                                    postParams.Add(key, value);
+                                }
+
+                                // handle ussd codes
+                                string response = handleAndroid(postParams);
+                                await resp.OutputStream.WriteAsync(Encoding.UTF8.GetBytes(response, 0, response.Length));
+                                resp.Close();
+                            }                        }
                         break;
                         default:
                             {
@@ -375,14 +716,6 @@ namespace HttpListenerBank
                         case "/test":
                         {
                             testTransfer();
-                            var (status, error, ts) = ListTransactions(12345678);
-                            if(status != -1){
-                                foreach (Transaction t in ts){
-                                    Console.WriteLine($"ID: {t.ID}, From: {t.From}, To: {t.To}, Amount: {t.Amount}, Status: {t.Status}, completetime: {t.Complete_time}");
-                                }
-                            } else{
-                                Console.WriteLine(error);
-                            }
                             string response = "Running tests";
                             await resp.OutputStream.WriteAsync(Encoding.UTF8.GetBytes(response, 0, response.Length));
                             resp.Close();
