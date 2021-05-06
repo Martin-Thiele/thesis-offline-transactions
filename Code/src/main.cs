@@ -77,6 +77,8 @@ namespace HttpListenerBank
         }
 
 
+        public static Dictionary<int, string> usersLoggedIn = new Dictionary<int, string>(){};
+
 
         private static (int, string) Confirm(int PhoneNumber, int id, int pin){
             // Find user id
@@ -131,7 +133,7 @@ namespace HttpListenerBank
                 return (-1, "No user with that phonenumber found");
             }
             // Fetch transaction
-            transactionList.Where(t => t.From == user.ID && t.Status == "Pending" && t.ID == id).SetValue(t => t.Status = "Declined").SetValue(t => t.Complete_time = DateTime.Now);
+            transactionList.Where(t => t.From == user.ID && t.Status == "Pending" && t.ID == id).SetValue(t => t.Complete_time = DateTime.Now).SetValue(t => t.Status = "Declined");
             return (0, "");
 
         }
@@ -546,7 +548,6 @@ namespace HttpListenerBank
                     return "END This is a proof of concept. Of course you don't need help... :)";
                 case "2": // balance
                 {
-
                     var (err, bal) = GetBalance(reqPhone);
                     if(err == 0){
                         return $"END Your balance is: {bal.ToString()} E-GNF";
@@ -556,6 +557,10 @@ namespace HttpListenerBank
                 }
                 case "3": // list transactions
                     if(reqlen == 1){
+                        User user = userList.SingleOrDefault(u => u.PhoneNumber == reqPhone);
+                        if(user == null){
+                            return "END Your phone number could not be found. Are you registered?";
+                        }
                         return "CON Please enter the order offset. 0 if you would like to see the 5 latest transactions. 5 if you'd like to see the 5 afterwards, 10 for the following 5 and so on.";
                     } else{
                         var (amount, ts) = ListTransactions(reqPhone, int.Parse(sections[1]));
@@ -583,6 +588,10 @@ namespace HttpListenerBank
                 case "4": // transfer
                     switch(reqlen){
                         case 1:
+                            User user = userList.SingleOrDefault(u => u.PhoneNumber == reqPhone);
+                            if(user == null){
+                                return "END Your phone number could not be found. Are you registered?";
+                            }
                             return "CON Please enter the phone number of the recipient";
                         case 2:
                             return $"CON Please enter the amount of E-GNF you'd like to send to {sections[1]}";
@@ -628,6 +637,10 @@ namespace HttpListenerBank
                 case "5": // request
                     switch(reqlen){
                         case 1:
+                            User user = userList.SingleOrDefault(u => u.PhoneNumber == reqPhone);
+                            if(user == null){
+                                return "END Your phone number could not be found. Are you registered?";
+                            }
                             return "CON Please enter the phone number of the person you'd like to request money from";
                         case 2:
                             return $"CON Please enter the amount of E-GNF you'd like to request from {sections[1]}";
@@ -657,6 +670,10 @@ namespace HttpListenerBank
                     switch(reqlen){
                         case 1:
                         {
+                            User user = userList.SingleOrDefault(u => u.PhoneNumber == reqPhone);
+                            if(user == null){
+                                return "END Your phone number could not be found. Are you registered?";
+                            }
                             return "CON Please enter the amount of GNF you'd like to deposit";
                         }
                         case 2:
@@ -697,6 +714,10 @@ namespace HttpListenerBank
                     switch(reqlen){
                         case 1:
                         {
+                            User user = userList.SingleOrDefault(u => u.PhoneNumber == reqPhone);
+                            if(user == null){
+                                return "END Your phone number could not be found. Are you registered?";
+                            }
                             return "CON Please enter the amount of GNF you'd like to withdraw";
                         }
                         case 2:
@@ -722,7 +743,6 @@ namespace HttpListenerBank
                             decimal amount = decimal.Parse(sections[1]);
                             int agentPhone = int.Parse(sections[2]);
                             User agent = userList.SingleOrDefault(u => u.PhoneNumber == agentPhone && u.ActiveAgentCash && amount <= u.MaxAmountCash && u.PhoneNumber != reqPhone);
-                            Console.WriteLine(agent);
                             if(agent == null){
                                 return $"END The requested agent ({agentPhone}) could not be found or is not registered as an agent accepting {amount} GNF";
                             }
@@ -751,7 +771,11 @@ namespace HttpListenerBank
                                 string ret = "CON please enter the [ID] of the order you'd like to confirm\n";
                                 foreach(Transaction t in ts){
                                     if(dp.ContainsKey(t.To)){
-                                        ret+=$"[{t.ID}] you -> {dp[t.To]}. {t.Amount} E-GNF ({t.Type})";
+                                        if(t.Type == "Deposit"){
+                                            ret+=$"[{t.ID}] you -> {dp[t.To]}. {t.Amount-(t.Amount*t.Fee)} E-GNF ({t.Type})";
+                                        } else{
+                                            ret+=$"[{t.ID}] you -> {dp[t.To]}. {t.Amount} E-GNF ({t.Type})";
+                                        }
                                     } else{
                                         User rec = userList.SingleOrDefault(u => u.ID == t.To);
                                         if(rec == null){
@@ -759,11 +783,17 @@ namespace HttpListenerBank
                                             continue;
                                         }
                                         dp.Add(t.To, rec.PhoneNumber.ToString());
-                                        ret+=$"[{t.ID}] you -> {rec.PhoneNumber}. {t.Amount} E-GNF ({t.Type})";
+                                        if(t.Type == "Deposit"){
+                                            ret+=$"[{t.ID}] you -> {rec.PhoneNumber}. {t.Amount-(t.Amount*t.Fee)} E-GNF ({t.Type})";
+                                        } else{
+                                            ret+=$"[{t.ID}] you -> {rec.PhoneNumber}. {t.Amount} E-GNF ({t.Type})";
+
+                                        }
                                     }
                                     if(t.Reason != null){
                                         ret+=$". \" {t.Reason} \"";
                                     }
+                                    ret+="\n";
                                 }
                                 return ret;
                             }
@@ -869,6 +899,7 @@ namespace HttpListenerBank
                                     if(t.Reason != null){
                                         ret+=$". \" {t.Reason} \"";
                                     }
+                                    ret+="\n";
                                 }
                                 return ret;
                             }
@@ -900,6 +931,8 @@ namespace HttpListenerBank
                                     return $"END You have declined the transfer of {t.Amount} E-GNF to {rec.PhoneNumber} in exchange for {t.Amount-(t.Amount*t.Fee)} GNF";
                                 } else if(t.Type == "Deposit"){ // agent declines a deposit
                                     return $"END You have declined the transfer of {t.Amount-(t.Amount*t.Fee)} E-GNF to {rec.PhoneNumber} in exchange for {t.Amount} GNF";
+                                } else if(t.Type == "Request"){
+                                    return $"END You have declined the transfer of {t.Amount} E-GNF to {rec.PhoneNumber}";
                                 } else{
                                     return $"END Unable to decline a transaction of type {t.Type}";
                                 }
@@ -1051,18 +1084,31 @@ namespace HttpListenerBank
 
 
 
-        // Android support
-        public static string handleAndroid(Dictionary<String, String> data){
-            // TODO: See if you can rewrite ussd to also handle android first
-            return "";
+
+        private static Dictionary<string, string> parseParams(HttpListenerRequest req){
+            if (!req.HasEntityBody)
+            {
+                Console.WriteLine("No form data was found");
+                return null;
+            } else{
+                // get post data
+                Dictionary<string, string> postParams = new Dictionary<string, string>();
+                Stream body = req.InputStream;
+                Encoding encoding = req.ContentEncoding;
+                StreamReader reader = new System.IO.StreamReader(body, encoding);
+                string rawData = reader.ReadToEnd();
+                string[] rawParams = rawData.Split('&');
+                foreach (string param in rawParams)
+                {
+                    string[] kvPair = param.Split('=');
+                    string key = kvPair[0];
+                    string value = UrlDecode(kvPair[1]);
+                    // Console.WriteLine($"{key}: {value}");
+                    postParams.Add(key, value);
+                }
+                return postParams;
+            }
         }
-
-
-
-
-
-
-
 
 
 
@@ -1100,12 +1146,12 @@ namespace HttpListenerBank
                 // Handle post requests
                 if (req.HttpMethod == "POST")
                 {
+                    var dict = parseParams(req);
                     switch(req.Url.AbsolutePath){
                         case "/reset":
                         {
-                                Console.WriteLine("Reset accounts and transactions");
-                                reset();
                                 string response = "Reset accounts and transactions";
+                                reset();
                                 await resp.OutputStream.WriteAsync(Encoding.UTF8.GetBytes(response, 0, response.Length));
                                 resp.Close();
                         }
@@ -1121,66 +1167,56 @@ namespace HttpListenerBank
                         break;
                         case "/ussd":
                         {
-                            if (!req.HasEntityBody)
-                            {
-                                Console.WriteLine("No form data was found");
-                                string response = "Please provide data when making a request";
-                                await resp.OutputStream.WriteAsync(Encoding.UTF8.GetBytes(response, 0, response.Length));
-                                resp.Close();
-                            } else{
-                                // get post data
-                                Dictionary<string, string> postParams = new Dictionary<string, string>();
-                                Stream body = req.InputStream;
-                                Encoding encoding = req.ContentEncoding;
-                                StreamReader reader = new System.IO.StreamReader(body, encoding);
-                                string rawData = reader.ReadToEnd();
-                                string[] rawParams = rawData.Split('&');
-                                foreach (string param in rawParams)
-                                {
-                                    string[] kvPair = param.Split('=');
-                                    string key = kvPair[0];
-                                    string value = UrlDecode(kvPair[1]);
-                                    // Console.WriteLine($"{key}: {value}");
-                                    postParams.Add(key, value);
-                                }
-
-                                // handle ussd codes
-                                string response = handleUSSD(postParams);
-                                await resp.OutputStream.WriteAsync(Encoding.UTF8.GetBytes(response, 0, response.Length));
-                                resp.Close();
-                            }
+                            // handle ussd codes
+                            string response = handleUSSD(dict);
+                            await resp.OutputStream.WriteAsync(Encoding.UTF8.GetBytes(response, 0, response.Length));
+                            resp.Close();
                         }
                         break;
-                        case "/android":
+                        case "/android/login/":
                         {
-                            if (!req.HasEntityBody)
-                            {
-                                Console.WriteLine("No form data was found");
-                                string response = "Please provide data when making a request";
-                                await resp.OutputStream.WriteAsync(Encoding.UTF8.GetBytes(response, 0, response.Length));
-                                resp.Close();
-                            } else{
-                                // get post data
-                                Dictionary<string, string> postParams = new Dictionary<string, string>();
-                                Stream body = req.InputStream;
-                                Encoding encoding = req.ContentEncoding;
-                                StreamReader reader = new System.IO.StreamReader(body, encoding);
-                                string rawData = reader.ReadToEnd();
-                                string[] rawParams = rawData.Split('&');
-                                foreach (string param in rawParams)
-                                {
-                                    string[] kvPair = param.Split('=');
-                                    string key = kvPair[0];
-                                    string value = UrlDecode(kvPair[1]);
-                                    // Console.WriteLine($"{key}: {value}");
-                                    postParams.Add(key, value);
-                                }
+                            int pin;
+                            int phone;
 
-                                // handle ussd codes
-                                string response = handleAndroid(postParams);
+                            bool successPin = int.TryParse(dict["pin"], out pin);
+                            bool successPh = int.TryParse(dict["pin"], out phone);
+                            string response = "";
+                            if(!successPin){
+                                response = String.Format("{{err: {0}, message: \"{1}\" }}", -1, "The PIN is not a valid PIN");
                                 await resp.OutputStream.WriteAsync(Encoding.UTF8.GetBytes(response, 0, response.Length));
                                 resp.Close();
-                            }                        }
+                                break;
+                            }
+                            if(!successPh){
+                                response = String.Format("{{err: {0}, message: \"{1}\" }}", -1, "The phone number is not a valid phone number");
+                                await resp.OutputStream.WriteAsync(Encoding.UTF8.GetBytes(response, 0, response.Length));
+                                resp.Close();
+                                break;
+                            }
+
+                            User user = userList.SingleOrDefault(u => u.PhoneNumber == phone && u.Pin == pin);
+                            // user not found
+                            if(user == null){
+                                response = String.Format("{{err: {0}, message: \"{1}\" }}", -1, "The provided phone number or PIN code was incorrect");
+                                await resp.OutputStream.WriteAsync(Encoding.UTF8.GetBytes(response, 0, response.Length));
+                                resp.Close();
+                                break;
+                            }
+
+                            // user already logged in
+                            if(usersLoggedIn.ContainsKey(phone)){
+                                usersLoggedIn.Remove(phone); // ensure user isn't stuck somewhere, i.e. they closed the app and they show as no longer online on client side
+                            }
+
+                            // generate unique token
+                            var token = Guid.NewGuid().ToString();
+                            usersLoggedIn.Add(phone, token);
+
+                            // return token and success status
+                            response = String.Format("{{err: {0}, token: \"{1}\" }}", 0, token);
+                            await resp.OutputStream.WriteAsync(Encoding.UTF8.GetBytes(response, 0, response.Length));
+                            resp.Close();
+                        }
                         break;
                         default:
                             {
@@ -1215,6 +1251,33 @@ namespace HttpListenerBank
                             await resp.OutputStream.WriteAsync(Encoding.UTF8.GetBytes(response, 0, response.Length));
                             resp.Close();
                         }
+                        break;
+
+                        // Android
+                        case "/android/balance":
+                            {
+                                string response = "";
+                                var token = req.QueryString["token"];
+                                // look up token in login table and fetch phone number
+                                if(token == null){
+                                    response = String.Format("{{ err: -1, message: \"{0}\" }}", "No token was provided with the request");
+                                    Console.WriteLine(response);
+                                    await resp.OutputStream.WriteAsync(Encoding.UTF8.GetBytes(response, 0, response.Length));
+                                    resp.Close();
+                                    break;
+                                }
+                                Console.WriteLine("should not get here");
+                                var (err, bal) = GetBalance(12345678);
+                                if(err == -1){
+                                    response = String.Format("{{ err: {0}, message: \"{1}\" }}", err, "User could not be found");
+                                }
+                                else{
+                                    response = String.Format("{{ err: {0}, balance: {1} }}", err, bal);
+                                }
+                                Console.WriteLine(response);
+                                await resp.OutputStream.WriteAsync(Encoding.UTF8.GetBytes(response, 0, response.Length));
+                                resp.Close();
+                            }
                         break;
                         default:
                         {
