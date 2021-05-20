@@ -1,0 +1,53 @@
+<resources>
+    <string name="app_name">Kubank</string>
+    <string name="balance">Balance</string>
+    <string name="send_money">Send money</string>
+    <string name="text_button">Text button</string>
+    <string name="lmao">lmao</string>
+    <string name="request">Request</string>
+    <string name="deposit">Deposit</string>
+    <string name="withdraw">Withdraw</string>
+    <string name="help">Help</string>
+    <string name="sign_out">Sign out</string>
+    <string name="login">Login</string>
+    <string name="phone_number">Phone number</string>
+    <string name="pin">PIN</string>
+    <string name="_12345678">12345678</string>
+    <string name="your_phone_number">Your phone number</string>
+    <string name="your_pin">****</string>
+    <string name="no_account_register">No account? Register</string>
+    <string name="sign_up">Sign up</string>
+    <string name="e_gnf">E-GNF</string>
+    <string name="current_balance">Current balance</string>
+    <string name="Send">Send</string>
+    <string name="Amount">Amount</string>
+    <string name="_0_0">0.0</string>
+    <string name="recipient">Recipient (Phone number)</string>
+    <string name="next">Next</string>
+    <string name="Confirm">Confirm</string>
+    <string name="Request_money">Request money</string>
+    <string name="reason">Reason</string>
+    <string name="sender_phone_number">Sender (Phone number)</string>
+    <string name="Request">Request</string>
+    <string name="transactions">Transactions</string>
+    <string name="confirm">Confirm</string>
+    <string name="decline">Decline</string>
+    <string name="question">Enter your question here, or enter your phone number and we\'ll call you back</string>
+    <string name="submit_question">Submit question</string>
+    <string name="max_cash">The maximum amount of GNF you can deliver in a single transaction</string>
+    <string name="max_amount">Max amount</string>
+    <string name="max_emoney">The maximum amount of E-GNF you can deliver in a single transaction</string>
+    <string name="fee">Fee</string>
+    <string name="your_fee_in_percentages_e_g_5_2">Your fee in percentages, e.g. 5.2</string>
+    <string name="become_an_agent_cash">Become an agent (Cash)</string>
+    <string name="become_an_agent_emoney">Become an agent (E-Money)</string>
+
+    <string name="become_agent_cash">You are about to become an agent delivering GNF in exchange for E-GNF. For your service you will get a small part of the transfer.</string>
+    <string name="become_agent_emoney">You are about to become an agent delivering E-GNF in exchange for GNF. For your service you will get a small part of the transfer.</string>
+    <string name="become_agent">Become agent</string>
+    <string name="the_fee_percentage_you_wish_to_take_for_your_service">The fee percentage you wish to take for your service.</string>
+    <string name="agent">Agent</string>
+    <string name="deposit_money">Deposit money</string>
+    <string name="withdraw_money">Withdraw money</string>
+
+</resources>

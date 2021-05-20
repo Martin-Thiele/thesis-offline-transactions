@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    android:layout_height="match_parent"
+    android:layout_width="match_parent"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <RelativeLayout xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:scrollbars="vertical"
+        tools:context=".Send">
+
+
+
+        <TextView
+            android:id="@+id/tv_send"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
+            android:layout_marginLeft="11dp"
+            android:layout_marginStart="11dp"
+            android:layout_marginTop="11dp"
+            android:text="@string/send_money"
+            android:fontFamily="sans-serif-condensed"
+            android:textSize="30sp"/>
+
+
+
+        <TextView
+            android:id="@+id/tv_amount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignLeft="@+id/tv_send"
+            android:layout_alignStart="@+id/tv_send"
+            android:layout_below="@+id/tv_send"
+            android:layout_marginTop="40dp"
+            android:fontFamily="sans-serif"
+            android:text="@string/Amount"
+            android:textSize="22sp" />
+
+        <EditText
+            android:id="@+id/et_amount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/tv_amount"
+            android:ems="17"
+            android:layout_alignLeft="@+id/tv_amount"
+            android:layout_alignStart="@+id/tv_amount"
+            android:inputType="numberDecimal"
+            android:hint="@string/_0_0"
+            android:autofillHints=""
+            />
+
+
+
+        <TextView
+            android:id="@+id/tv_recipient"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignLeft="@+id/et_amount"
+            android:layout_alignStart="@+id/et_amount"
+            android:layout_below="@+id/et_amount"
+            android:layout_marginTop="33dp"
+            android:fontFamily="sans-serif"
+            android:text="@string/recipient"
+            android:textSize="22sp" />
+
+        <EditText
+            android:id="@+id/et_recipient"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:inputType="phone"
+            android:ems="17"
+            android:layout_below="@+id/tv_recipient"
+            android:layout_alignLeft="@+id/tv_recipient"
+            tools:ignore="TextFields"
+            android:layout_alignStart="@+id/tv_recipient"
+            android:hint="@string/_12345678"
+            android:autofillHints="" />
+
+
+        <TextView
+            android:id="@+id/tv_reason"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignLeft="@+id/et_amount"
+            android:layout_alignStart="@+id/et_amount"
+            android:layout_below="@+id/et_recipient"
+            android:layout_marginTop="33dp"
+            android:fontFamily="sans-serif"
+            android:text="Reason"
+            android:textSize="22sp" />
+
+        <EditText
+            android:id="@+id/et_reason"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/tv_reason"
+            android:layout_alignStart="@+id/tv_recipient"
+            android:layout_alignLeft="@+id/tv_recipient"
+            android:autofillHints=""
+            android:ems="17"
+            android:gravity="top"
+            android:hint="Reason for transfer, e.g. bills, payment for dinner, …"
+            android:inputType="textCapSentences|textMultiLine"
+            android:lines="3"
+            android:minLines="2"
+            tools:ignore="TextFields" />
+
+        <TextView
+            android:id="@+id/tv_description"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/et_reason"
+            android:layout_alignStart="@+id/et_amount"
+            android:layout_alignLeft="@+id/et_amount"
+            android:layout_marginTop="0dp"
+            android:fontFamily="sans-serif"
+            android:text="Leave empty to not provide a reason"
+            android:textColor="#929295"
+            android:textSize="14sp" />
+
+        <Button
+            android:id="@+id/btn_next"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:layout_below="@id/tv_description"
+            android:layout_centerInParent="true"
+            android:ems="12"
+            android:layout_marginTop="30dp"
+            android:text="@string/next"/>
+
+    </RelativeLayout>
+</ScrollView>

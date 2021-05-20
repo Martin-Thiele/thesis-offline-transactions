@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TextView
+        android:id="@+id/tv_help"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginLeft="11dp"
+        android:layout_marginStart="11dp"
+        android:layout_marginTop="13dp"
+        android:text="@string/help"
+        android:fontFamily="sans-serif-condensed"
+        android:textSize="30sp"/>
+
+    <EditText
+        android:layout_marginLeft="11dp"
+        android:id="@+id/et_help"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:minLines="2"
+        android:inputType="textMultiLine"
+        android:hint="@string/question"
+        android:ems="17"
+        android:layout_below="@+id/tv_help"
+        android:autofillHints=""
+        tools:ignore="TextFields"
+        android:layout_marginStart="11dp" />
+
+    <Button
+        android:id="@+id/btn_help"
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:layout_below="@id/et_help"
+        android:layout_centerInParent="true"
+        android:ems="12"
+        android:layout_marginTop="30dp"
+        android:text="@string/submit_question"
+        />
+</RelativeLayout>

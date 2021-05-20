@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:scrollbars="vertical"
+    tools:context=".Deposit">
+
+    <TextView
+        android:id="@+id/tv_deposit"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginLeft="11dp"
+        android:layout_marginStart="11dp"
+        android:layout_marginTop="11dp"
+        android:text="@string/deposit_money"
+        android:fontFamily="sans-serif-condensed"
+        android:textSize="30sp"/>
+
+    <TextView
+        android:id="@+id/tv_description"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/tv_deposit"
+        android:layout_centerInParent="true"
+        android:layout_marginTop="22dp"
+        android:width="320dp"
+        android:fontFamily="sans-serif"
+        android:text="Meet with a local agent to trade GNF for E-GNF \n 1. Enter amount you'd like to deposit \n 2. Choose agent \n 3. Meet and hand-over cash. Agent will transfer shortly after\n\nThe agent might take a small fee for their service"
+        android:textSize="14sp" />
+
+    <TextView
+        android:id="@+id/tv_amount"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/tv_deposit"
+        android:layout_alignStart="@+id/tv_deposit"
+        android:layout_below="@+id/tv_description"
+        android:layout_marginTop="40dp"
+        android:fontFamily="sans-serif"
+        android:text="@string/Amount"
+        android:textSize="22sp" />
+
+    <EditText
+        android:id="@+id/et_amount"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/tv_amount"
+        android:ems="17"
+        android:layout_alignLeft="@+id/tv_amount"
+        android:layout_alignStart="@+id/tv_amount"
+        android:inputType="numberDecimal"
+        android:hint="@string/_0_0"
+        android:autofillHints=""
+        />
+
+    <Button
+        android:id="@+id/btn_next"
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:layout_below="@id/et_amount"
+        android:layout_centerInParent="true"
+        android:ems="12"
+        android:layout_marginTop="30dp"
+        android:text="@string/next"/>
+
+
+</RelativeLayout>

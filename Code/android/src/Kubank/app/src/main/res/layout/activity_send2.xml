@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".Send2">
+
+
+
+    <TextView
+        android:id="@+id/tv_send"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginLeft="11dp"
+        android:layout_marginStart="11dp"
+        android:layout_marginTop="13dp"
+        android:text="@string/send_money"
+        android:fontFamily="sans-serif-condensed"
+        android:textSize="30sp"/>
+
+    <TextView
+        android:id="@+id/tv_senddescription"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/tv_send"
+        android:layout_centerInParent="true"
+        android:layout_marginTop="22dp"
+        android:fontFamily="sans-serif"
+        android:text=""
+        android:textSize="16sp" />
+
+
+    <TextView
+        android:id="@+id/tv_pin"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/tv_send"
+        android:layout_alignStart="@+id/tv_send"
+        android:layout_below="@+id/tv_senddescription"
+        android:layout_marginTop="40dp"
+        android:fontFamily="sans-serif"
+        android:text="@string/pin"
+        android:textSize="22sp" />
+
+    <EditText
+        android:id="@+id/et_pin"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/tv_pin"
+        android:ems="17"
+        android:layout_alignLeft="@+id/tv_pin"
+        android:layout_alignStart="@+id/tv_pin"
+        android:inputType="numberPassword"
+        android:hint="@string/your_pin"
+        android:autofillHints=""
+        />
+
+
+    <Button
+        android:id="@+id/btn_confirm"
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:layout_below="@id/et_pin"
+        android:layout_centerInParent="true"
+        android:ems="12"
+        android:layout_marginTop="30dp"
+        android:text="@string/Confirm"/>
+
+
+</RelativeLayout>
