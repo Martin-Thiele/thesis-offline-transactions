@@ -24,7 +24,7 @@ namespace BankTypes
         public int To { get; set; }
         public decimal Amount { get; set; }
         public decimal Fee { get; set; } // percent
-        public string Type { get; set; } // Transfer, Depoit, Withdrawal
+        public string Type { get; set; } // Transfer, Depoit, Withdrawal, Request
         public string Status { get; set; } // 'Pending', 'Complete'
         public string Reason { get; set; }
         public DateTime Complete_time { get; set; }
@@ -42,5 +42,13 @@ namespace BankTypes
         public string Status { get; set; } // 'Pending', 'Complete'
         public string Reason { get; set; }
         public DateTime Complete_time { get; set; }
+    }
+
+    public class Question
+    {
+        public int ID { get; set; }
+        public int From { get; set; } // user id
+        public String Q {get; set; }
+        public DateTime Asked_time { get; set; }
     }
 }

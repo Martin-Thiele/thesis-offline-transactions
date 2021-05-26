@@ -366,10 +366,11 @@ class CustomExpandableListAdapter internal constructor(
 
                 // show the reason for the transaction
             } else {
-                if(js["Reason"] == "" || js["Reason"] == "null"){
+                val reason = js["Reason"].toString()
+                if(reason == "" || reason == "null"){
                     reas.text = ""
                 } else {
-                    reas.text = js["Reason"].toString()
+                    reas.text = reason
                 }
             }
         }

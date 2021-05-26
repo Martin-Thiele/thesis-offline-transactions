@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">Kubank</string>
     <string name="balance">Balance</string>
-    <string name="send_money">Send money</string>
+    <string name="send_money">Send</string>
     <string name="text_button">Text button</string>
     <string name="lmao">lmao</string>
     <string name="request">Request</string>
@@ -46,7 +46,7 @@
     <string name="become_agent_emoney">You are about to become an agent delivering E-GNF in exchange for GNF. For your service you will get a small part of the transfer.</string>
     <string name="become_agent">Become agent</string>
     <string name="the_fee_percentage_you_wish_to_take_for_your_service">The fee percentage you wish to take for your service.</string>
-    <string name="agent">Agent</string>
+    <string name="agent">Agent settings</string>
     <string name="deposit_money">Deposit money</string>
     <string name="withdraw_money">Withdraw money</string>
 

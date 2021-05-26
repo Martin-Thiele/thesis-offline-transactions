@@ -1,6 +1,3 @@
-// Template for http server found here:
-// https://gist.github.com/define-private-public/d05bc52dd0bed1c4699d49e2737e80e7
-
 using System;
 using System.IO;
 using System.Text;
@@ -72,19 +69,25 @@ namespace HttpListenerBank
         public static List<Transaction> transactionList = new List<Transaction>() {
         };
 
+        public static Dictionary<string, int> usersLoggedIn = new Dictionary<string, int>(){};
+
+
         private static void reset(){
             userList = new List<User>(){
-                new User() { ID = 1, PhoneNumber = 12345678, Balance = 100.0m, ActiveAgentEMoney = true, ActiveAgentCash = true, MaxAmountEMoney = 20, CashFee = 0.05m, EMoneyFee = 0.05m, MaxAmountCash = 25, Pin = 1234} ,
-                new User() { ID = 2, PhoneNumber = 87654321, Balance = 100.0m, ActiveAgentEMoney = true, ActiveAgentCash = true, MaxAmountEMoney = 200, CashFee = 0.1m, EMoneyFee = 0.1m, MaxAmountCash = 200,  Pin = 1234} ,
+//                new User() { ID = 1, PhoneNumber = 12345678, Balance = 100.0m, ActiveAgentEMoney = true, ActiveAgentCash = true, MaxAmountEMoney = 20, CashFee = 0.05m, EMoneyFee = 0.05m, MaxAmountCash = 25, Pin = 1234} ,
+//                new User() { ID = 2, PhoneNumber = 87654321, Balance = 100.0m, ActiveAgentEMoney = true, ActiveAgentCash = true, MaxAmountEMoney = 200, CashFee = 0.1m, EMoneyFee = 0.1m, MaxAmountCash = 200,  Pin = 1234} ,
             };
             transactionList = new List<Transaction>() {
                 // new Transaction() { ID = 1, From = 1, To = 2, Amount = (decimal) 5m, Fee = (decimal) 1.0m, Type = "Deposit", Status = "Complete", Reason = null, Complete_time = DateTime.Now } // User 1 has deposited 5 GNF through User 2. In return user 1 has received 4.95 E-GNF
            };
+
+           questionList = new List<Question>(){};
+
+           usersLoggedIn = new Dictionary<string, int>(){};
         }
 
 
         // token -> phone number
-        public static Dictionary<string, int> usersLoggedIn = new Dictionary<string, int>(){};
 
 
         private static (int, string) Confirm(int PhoneNumber, int id, int pin){
@@ -129,50 +132,50 @@ namespace HttpListenerBank
                 // Notify sender and recipient that they have confirmed the transaction
                 User from = userList.SingleOrDefault(u => u.PhoneNumber == transaction.From);
                 User to = userList.SingleOrDefault(u => u.PhoneNumber == transaction.To);
-	            if(from != null && to != null){
-	            	var retSender = "";
-	            	var retRecipient = "";
+                if(from != null && to != null){
+                    var retSender = "";
+                    var retRecipient = "";
 
-	                if(transaction.Type == "Transfer"){
-	                	// Send to sender
-	                    retSender = $"SMS -> ({from.PhoneNumber}) You have sent {transaction.Amount} E-GNF to {to.PhoneNumber}";
-	                    if(transaction.Reason != null){
-	                        retSender+=$". \" {transaction.Reason} \"";
-	                    }
+                    if(transaction.Type == "Transfer"){
+                        // Send to sender
+                        retSender = $"SMS -> ({from.PhoneNumber}) You have sent {transaction.Amount} E-GNF to {to.PhoneNumber}";
+                        if(transaction.Reason != null){
+                            retSender+=$". \" {transaction.Reason} \"";
+                        }
 
-	                	// Send to recipient
-	                    retRecipient = $"SMS -> ({to.PhoneNumber}) You have received {transaction.Amount} E-GNF from {from.PhoneNumber}";
-	                    if(transaction.Reason != null){
-	                        retRecipient+=$". \" {transaction.Reason} \"";
-	                    }
-	                }
-	                else if(transaction.Type == "Request"){
-	                	// Send to sender
-	                    retSender = $"SMS -> ({from.PhoneNumber}) You have sent the requested {transaction.Amount} E-GNF to {to.PhoneNumber}";
-	                    if(transaction.Reason != null){
-	                        retSender+=$". \" {transaction.Reason} \"";
-	                    }
+                        // Send to recipient
+                        retRecipient = $"SMS -> ({to.PhoneNumber}) You have received {transaction.Amount} E-GNF from {from.PhoneNumber}";
+                        if(transaction.Reason != null){
+                            retRecipient+=$". \" {transaction.Reason} \"";
+                        }
+                    }
+                    else if(transaction.Type == "Request"){
+                        // Send to sender
+                        retSender = $"SMS -> ({from.PhoneNumber}) You have sent the requested {transaction.Amount} E-GNF to {to.PhoneNumber}";
+                        if(transaction.Reason != null){
+                            retSender+=$". \" {transaction.Reason} \"";
+                        }
 
-	                	// Send to recipient
-	                    retRecipient = $"SMS -> ({to.PhoneNumber}) You have received your requested {transaction.Amount} E-GNF from {from.PhoneNumber}";
-	                    if(transaction.Reason != null){
-	                        retRecipient+=$". \" {transaction.Reason} \"";
-	                    }
-	                }
-	                else if (transaction.Type == "Deposit"){
-	                	// Send to sender
-	                    retSender = $"SMS -> ({from.PhoneNumber}) You have delivered {transaction.Amount - (transaction.Amount*transaction.Fee)} E-GNF to {to.PhoneNumber} in exchange for {transaction.Amount} GNF";
-	                    // Send to recipient
-	                    retRecipient = $"SMS -> ({to.PhoneNumber}) You have deposited {transaction.Amount} GNF through {from.PhoneNumber}. Your account balance has increased by {transaction.Amount - (transaction.Amount*transaction.Fee)} E-GNF";
-	                } else if(transaction.Type == "Withdrawal"){
-	                	// Send to sender (in this case, the sender is the user, the recipient is the agent)
-	                    retSender = $"SMS -> ({from.PhoneNumber}) You have withdrawed {transaction.Amount - (transaction.Amount*transaction.Fee)} GNF through {to.PhoneNumber} in exchange for {transaction.Amount} E-GNF";
-	                    // Send to recipient
-	                    retRecipient = $"SMS -> ({to.PhoneNumber}) You have delivered {transaction.Amount - (transaction.Amount*transaction.Fee)} GNF to {to.PhoneNumber} in exchange for {transaction.Amount} E-GNF";
-					}
+                        // Send to recipient
+                        retRecipient = $"SMS -> ({to.PhoneNumber}) You have received your requested {transaction.Amount} E-GNF from {from.PhoneNumber}";
+                        if(transaction.Reason != null){
+                            retRecipient+=$". \" {transaction.Reason} \"";
+                        }
+                    }
+                    else if (transaction.Type == "Deposit"){
+                        // Send to sender
+                        retSender = $"SMS -> ({from.PhoneNumber}) You have delivered {transaction.Amount - (transaction.Amount*transaction.Fee)} E-GNF to {to.PhoneNumber} in exchange for {transaction.Amount} GNF";
+                        // Send to recipient
+                        retRecipient = $"SMS -> ({to.PhoneNumber}) You have deposited {transaction.Amount} GNF through {from.PhoneNumber}. Your account balance has increased by {transaction.Amount - (transaction.Amount*transaction.Fee)} E-GNF";
+                    } else if(transaction.Type == "Withdrawal"){
+                        // Send to sender (in this case, the sender is the user, the recipient is the agent)
+                        retSender = $"SMS -> ({from.PhoneNumber}) You have withdrawed {transaction.Amount - (transaction.Amount*transaction.Fee)} GNF through {to.PhoneNumber} in exchange for {transaction.Amount} E-GNF";
+                        // Send to recipient
+                        retRecipient = $"SMS -> ({to.PhoneNumber}) You have delivered {transaction.Amount - (transaction.Amount*transaction.Fee)} GNF to {to.PhoneNumber} in exchange for {transaction.Amount} E-GNF";
+                    }
                     Console.WriteLine(retSender);
                     Console.WriteLine(retRecipient);
-	            }
+                }
 
 
 
@@ -276,7 +279,7 @@ namespace HttpListenerBank
                 return (-1, "Amount can't be negative");
             }
             if(amount < 0.1m){
-            	return (-1, "Amount can't be less than 0.1 E-GNF");
+                return (-1, "Amount can't be less than 0.1 E-GNF");
             }
             if(fee < 0.0m){
                 return (-1, "Fee can't be negative");
@@ -295,7 +298,7 @@ namespace HttpListenerBank
                     Console.WriteLine($"SMS -> ({from.PhoneNumber}) - User {to.PhoneNumber} has requested {amount-amount*fee} E-GNF in exchange for {amount} GNF");
                 } else if(type == "Request"){
                     string ret = $"SMS -> ({from.PhoneNumber}) - User {to.PhoneNumber} has requested {amount-amount*fee} E-GNF";
-                    if(reason != null){
+                    if(reason != null && reason != ""){
                         ret+=$". \" {reason} \"";
                     }
                     Console.WriteLine(ret);
@@ -397,6 +400,7 @@ namespace HttpListenerBank
                 }
             }
 
+            // Request
             if(testRequest){
                 var (id, _) = Transfer(87654321, 12345678, 5m, 0.00m, "Request", "For dinner tonight :)");
                 var (_, balrecipient) = GetBalance(12345678);
@@ -457,6 +461,7 @@ namespace HttpListenerBank
                 }
             }
 
+            // Decline
             if(testDecline){
                 decimal amount = 10m;
                 decimal fee = 0m;
@@ -633,16 +638,16 @@ namespace HttpListenerBank
                          "12 - Sign up";
                     return response;
                 case "1": // help
-                	if(reqlen == 1){
-                    	return "CON enter a question and we'll get back to you. If you'd like for us to call you, leave this space empty";
-                	} else{
+                    if(reqlen == 1){
+                        return "CON enter a question and we'll get back to you. If you'd like for us to call you, leave this space empty";
+                    } else{
                         var (err, msg) = newQuestion(reqPhone, sections[1]);
                         if(err == -1) {
                             return $"END {msg}";
                         } else{
-                            return $"Your question has been sent. You'll get a response shortly";
+                            return $"END Your question has been sent. You'll get a response shortly";
                         }
-                	}
+                    }
                 case "2": // balance
                 {
                     var (err, bal) = GetBalance(reqPhone);
@@ -677,7 +682,7 @@ namespace HttpListenerBank
                                     } else{
                                         ret+=$"{t.From} -> {t.To}. {t.Amount} E-GNF ({t.Type}) [{t.Status}]"; // 02-05 : you -> 12345678. 1.23 GNF (Transfer) [Completed] "Cinema"
                                     }
-                                    if(t.Reason != null){
+                                    if(t.Reason != null && t.Reason != ""){
                                         ret+=$" \"{t.Reason}\"";
                                     }
                                     ret+="\n";
@@ -759,7 +764,7 @@ namespace HttpListenerBank
                             if(!successAm){
                                 return $"END {sections[2]} is not a valid amount";
                             }
-                            var (id, msg) = Transfer(phone, reqPhone, amount, 0m, "Request", reason != "0" ? reason : null);
+                            var (id, msg) = Transfer(phone, reqPhone, amount, 0m, "Request", (reason != "0" && reason != "") ? reason : null);
                             if(id == -1){
                                     return $"END {msg}";
                             } else{
@@ -891,7 +896,7 @@ namespace HttpListenerBank
 
                                         }
                                     }
-                                    if(t.Reason != null){
+                                    if(t.Reason != null && t.Reason != ""){
                                         ret+=$". \" {t.Reason} \"";
                                     }
                                     ret+="\n";
@@ -997,7 +1002,7 @@ namespace HttpListenerBank
                                         dp.Add(t.To, rec.PhoneNumber.ToString());
                                         ret+=$"[{t.ID}] you -> {rec.PhoneNumber}. {t.Amount} E-GNF ({t.Type})";
                                     }
-                                    if(t.Reason != null){
+                                    if(t.Reason != null && t.Reason != ""){
                                         ret+=$". \" {t.Reason} \"";
                                     }
                                     ret+="\n";
@@ -1320,10 +1325,10 @@ namespace HttpListenerBank
                 // Handle post requests
                 if (req.HttpMethod == "POST")
                 {
-                    
+
                     var dict = new Dictionary<string, string>();
                     if(req.Url.AbsolutePath != "/ussd"){
-                    	dict = parsePostParams(req);
+                        dict = parsePostParams(req);
                     }
                     switch(req.Url.AbsolutePath){
                         case "/reset":
@@ -1397,10 +1402,10 @@ namespace HttpListenerBank
                             // user already logged in
                             var userl = usersLoggedIn.FirstOrDefault(u => u.Value == number);
                             try{
-                            	usersLoggedIn.Remove(userl.Key); // ensure user isn't stuck somewhere, i.e. they closed the app and they show as no longer online on client side
+                                usersLoggedIn.Remove(userl.Key); // ensure user isn't stuck somewhere, i.e. they closed the app and they show as no longer online on client side
                             } catch(Exception){
-                            	Console.WriteLine($"Couldn't remove {number} from active sessions");
-                            	Console.WriteLine(userl);
+                                Console.WriteLine($"Couldn't remove {number} from active sessions");
+                                Console.WriteLine(userl);
                             }
 
                             // generate unique token
@@ -1446,11 +1451,11 @@ namespace HttpListenerBank
                                 await resp.OutputStream.WriteAsync(Encoding.UTF8.GetBytes(response, 0, response.Length));
                                 resp.Close();
                                 break;
-                            } 
+                            }
 
-                        	NewUser(pin, number);
-                        	var token = Guid.NewGuid().ToString();
-                        	usersLoggedIn.Add(token, number);
+                            NewUser(pin, number);
+                            var token = Guid.NewGuid().ToString();
+                            usersLoggedIn.Add(token, number);
                             response = String.Format("{{err: {0}, token: \"{1}\" }}", 0, token);
                             await resp.OutputStream.WriteAsync(Encoding.UTF8.GetBytes(response, 0, response.Length));
                             resp.Close();
@@ -1459,8 +1464,8 @@ namespace HttpListenerBank
                         case "/android/send":
                         {
 
-                        	// Ensure data is there and valid
-                        	decimal amount;
+                            // Ensure data is there and valid
+                            decimal amount;
                             int recipient;
                             int pin;
                             string response = "";
@@ -1500,7 +1505,7 @@ namespace HttpListenerBank
                             }
 
                             // Check if token exists
-							if(!dict.ContainsKey("token")){
+                            if(!dict.ContainsKey("token")){
                                 response = String.Format("{{err: {0}, message: \"{1}\" }}", -1, "No token was provided with the request");
                                 await resp.OutputStream.WriteAsync(Encoding.UTF8.GetBytes(response, 0, response.Length));
                                 resp.Close();
@@ -1517,22 +1522,22 @@ namespace HttpListenerBank
                             var phone = usersLoggedIn[dict["token"]];
 
                             // check if sender exists
-				            User from = userList.SingleOrDefault(u => u.PhoneNumber == phone);
-				            if(from == null){
+                            User from = userList.SingleOrDefault(u => u.PhoneNumber == phone);
+                            if(from == null){
                                 response = String.Format("{{err: {0}, message: \"{1}\" }}", -1, $"Could not find an account with the number {recipient}");
                                 await resp.OutputStream.WriteAsync(Encoding.UTF8.GetBytes(response, 0, response.Length));
                                 resp.Close();
                                 break;
-				            }
+                            }
 
-				            // Check if recipient exists
-				            User to = userList.SingleOrDefault(u => u.PhoneNumber == recipient);
-				            if(to == null){
+                            // Check if recipient exists
+                            User to = userList.SingleOrDefault(u => u.PhoneNumber == recipient);
+                            if(to == null){
                                 response = String.Format("{{err: {0}, message: \"{1}\" }}", -1, $"Could not find an account with the number {recipient}");
                                 await resp.OutputStream.WriteAsync(Encoding.UTF8.GetBytes(response, 0, response.Length));
                                 resp.Close();
                                 break;
-				            }
+                            }
 
                             if(recipient == from.PhoneNumber){
                                 response = String.Format("{{err: {0}, message: \"{1}\" }}", -1, $"You can't send money to yourself");
@@ -1541,13 +1546,13 @@ namespace HttpListenerBank
                                 break;
                             }
 
-				            // Check if balance is valid
-				            if(from.Balance < amount){
+                            // Check if balance is valid
+                            if(from.Balance < amount){
                                 response = String.Format("{{err: {0}, message: \"{1}\" }}", -1, "You don't have sufficient funds to complete this transfer");
                                 await resp.OutputStream.WriteAsync(Encoding.UTF8.GetBytes(response, 0, response.Length));
                                 resp.Close();
                                 break;
-				            }
+                            }
 
                             // Data was valid, go to next slide and enter PIN
                             if(dict.Count <= 4){
@@ -1578,31 +1583,31 @@ namespace HttpListenerBank
                             // Parse reason if it exists
                             string reason = null;
                             if(dict.ContainsKey("reason")){
-                            	if(dict["reason"] != ""){
-                            		reason = dict["reason"];
-                            	}
+                                if(dict["reason"] != ""){
+                                    reason = dict["reason"];
+                                }
                             }
 
                             // Transfer
-							var (id, err) = Transfer(phone, recipient, amount, 0.00m, "Transfer", reason);
-							if(id == -1){
-								response = String.Format("{{err: {0}, message: \"{1}\" }}", -1, err);
+                            var (id, err) = Transfer(phone, recipient, amount, 0.00m, "Transfer", reason);
+                            if(id == -1){
+                                response = String.Format("{{err: {0}, message: \"{1}\" }}", -1, err);
                                 await resp.OutputStream.WriteAsync(Encoding.UTF8.GetBytes(response, 0, response.Length));
                                 resp.Close();
                                 break;
-							}
+                            }
 
-							// Confirm transfer
-			                var (err2, msg) = Confirm(phone, id, pin);
-			                if(err2 == -1){
-	                            response = String.Format("{{err: {0}, message: \"{1}\" }}", -1, msg);
-	                            await resp.OutputStream.WriteAsync(Encoding.UTF8.GetBytes(response, 0, response.Length));
-	                            resp.Close();
-			                } else{
-			                	response = String.Format("{{err: {0}, message: \"{1}\" }}", 0, $"Successfully transfered {amount} E-GNF to {recipient}");
-	                            await resp.OutputStream.WriteAsync(Encoding.UTF8.GetBytes(response, 0, response.Length));
-	                            resp.Close();
-			                }
+                            // Confirm transfer
+                            var (err2, msg) = Confirm(phone, id, pin);
+                            if(err2 == -1){
+                                response = String.Format("{{err: {0}, message: \"{1}\" }}", -1, msg);
+                                await resp.OutputStream.WriteAsync(Encoding.UTF8.GetBytes(response, 0, response.Length));
+                                resp.Close();
+                            } else{
+                                response = String.Format("{{err: {0}, message: \"{1}\" }}", 0, $"Successfully transfered {amount} E-GNF to {recipient}");
+                                await resp.OutputStream.WriteAsync(Encoding.UTF8.GetBytes(response, 0, response.Length));
+                                resp.Close();
+                            }
 
                         }
                         break;
@@ -1782,7 +1787,7 @@ namespace HttpListenerBank
                         break;
                         case "/android/confirm":
                         {
-                        	string response = "";
+                            string response = "";
                             if(!dict.ContainsKey("id") || dict["id"] == null || dict["id"] == ""){
                                 response = String.Format("{{err: {0}, message: \"{1}\" }}", -1, "no ID could be found");
                                 await resp.OutputStream.WriteAsync(Encoding.UTF8.GetBytes(response, 0, response.Length));
@@ -1808,7 +1813,7 @@ namespace HttpListenerBank
                                 break;
                             }
                             int orderId;
-							bool successId = int.TryParse(dict["id"], out orderId);
+                            bool successId = int.TryParse(dict["id"], out orderId);
                             if(!successId){
                                 response = String.Format("{{err: {0}, message: \"{1}\" }}", -1, "The order id is not valid");
                                 await resp.OutputStream.WriteAsync(Encoding.UTF8.GetBytes(response, 0, response.Length));
@@ -1816,7 +1821,7 @@ namespace HttpListenerBank
                                 break;
                             }
                             int pin;
-							bool successPin = int.TryParse(dict["pin"], out pin);
+                            bool successPin = int.TryParse(dict["pin"], out pin);
                             if(!successPin){
                                 response = String.Format("{{err: {0}, message: \"{1}\" }}", -1, "The PIN is not a valid PIN number");
                                 await resp.OutputStream.WriteAsync(Encoding.UTF8.GetBytes(response, 0, response.Length));
@@ -1827,26 +1832,26 @@ namespace HttpListenerBank
                             var phone = usersLoggedIn[dict["token"]];
                             var (err, msg) = Confirm(phone, orderId, pin);
                             if(err == -1){
-								response = String.Format("{{err: {0}, message: \"{1}\" }}", -1, msg);
+                                response = String.Format("{{err: {0}, message: \"{1}\" }}", -1, msg);
                                 await resp.OutputStream.WriteAsync(Encoding.UTF8.GetBytes(response, 0, response.Length));
                                 resp.Close();
                                 break;
                             }
-							response = String.Format("{{err: {0}, message: \"{1}\" }}", 0, "Success");
+                            response = String.Format("{{err: {0}, message: \"{1}\" }}", 0, "Success");
                             await resp.OutputStream.WriteAsync(Encoding.UTF8.GetBytes(response, 0, response.Length));
                             resp.Close();
                         }
                         break;
                         case "/android/decline":
                         {
-                        	
+
                         }
                         break;
                         case "/android/stopAgent":
                         {
-                        	string response = "";
+                            string response = "";
 
-							if(!dict.ContainsKey("delivertype") || dict["delivertype"] == null || dict["delivertype"] == ""){
+                            if(!dict.ContainsKey("delivertype") || dict["delivertype"] == null || dict["delivertype"] == ""){
                                 response = String.Format("{{err: {0}, message: \"{1}\" }}", -1, "No deliver type was provided");
                                 await resp.OutputStream.WriteAsync(Encoding.UTF8.GetBytes(response, 0, response.Length));
                                 resp.Close();
@@ -1868,23 +1873,23 @@ namespace HttpListenerBank
                             }
 
                             var phone = usersLoggedIn[dict["token"]];
-							var err = -1;
+                            var err = -1;
                             var msg = "";
-                        	
+
                             if(dict["delivertype"] == "cash"){
-	                        	(err, msg) = SetAgentStatusCash(phone, 0, 0); // toggle status off
+                                (err, msg) = SetAgentStatusCash(phone, 0, 0); // toggle status off
                             } else if(dict["delivertype"] == "emoney"){
-                            	(err, msg) = SetAgentStatusEMoney(phone, 0, 0); // toggle status off
+                                (err, msg) = SetAgentStatusEMoney(phone, 0, 0); // toggle status off
                             } else{
-                            	msg = $"{dict["delivertype"]} is not a valid deliver type";
+                                msg = $"{dict["delivertype"]} is not a valid deliver type";
                             }
                             if(err == -1){
-								response = String.Format("{{err: {0}, message: \"{1}\" }}", -1, msg);
+                                response = String.Format("{{err: {0}, message: \"{1}\" }}", -1, msg);
                                 await resp.OutputStream.WriteAsync(Encoding.UTF8.GetBytes(response, 0, response.Length));
                                 resp.Close();
                                 break;
-							}
-							response = String.Format("{{err: {0}, message: \"{1}\" }}", 0, $"Success!");
+                            }
+                            response = String.Format("{{err: {0}, message: \"{1}\" }}", 0, $"Success!");
                             await resp.OutputStream.WriteAsync(Encoding.UTF8.GetBytes(response, 0, response.Length));
                             resp.Close();
 
@@ -1893,7 +1898,7 @@ namespace HttpListenerBank
 
                         case "/android/becomeAgent":
                         {
-                        	string response = "";
+                            string response = "";
 
                             // Check if theres an amount
                             if(!dict.ContainsKey("amount") || dict["amount"] == null || dict["amount"] == ""){
@@ -1909,7 +1914,7 @@ namespace HttpListenerBank
                                 resp.Close();
                                 break;
                             }
-							if(!dict.ContainsKey("delivertype") || dict["delivertype"] == null || dict["delivertype"] == ""){
+                            if(!dict.ContainsKey("delivertype") || dict["delivertype"] == null || dict["delivertype"] == ""){
                                 response = String.Format("{{err: {0}, message: \"{1}\" }}", -1, "No deliver type was provided");
                                 await resp.OutputStream.WriteAsync(Encoding.UTF8.GetBytes(response, 0, response.Length));
                                 resp.Close();
@@ -1956,20 +1961,20 @@ namespace HttpListenerBank
                             var err = -1;
                             var msg = "";
                             if(dict["delivertype"] == "cash"){
-								(err, msg) = SetAgentStatusCash(phone, amount, fee);
+                                (err, msg) = SetAgentStatusCash(phone, amount, fee);
                             } else if(dict["delivertype"] == "emoney"){
-                            	(err, msg) = SetAgentStatusEMoney(phone, amount, fee);
+                                (err, msg) = SetAgentStatusEMoney(phone, amount, fee);
                             } else{
-                            	msg = $"{dict["delivertype"]} is not a valid deliver type";
+                                msg = $"{dict["delivertype"]} is not a valid deliver type";
                             }
                             if(err == -1){
-								response = String.Format("{{err: {0}, message: \"{1}\" }}", -1, msg);
+                                response = String.Format("{{err: {0}, message: \"{1}\" }}", -1, msg);
                                 await resp.OutputStream.WriteAsync(Encoding.UTF8.GetBytes(response, 0, response.Length));
                                 resp.Close();
                                 break;
-							}
+                            }
 
-		                	response = String.Format("{{err: {0}, message: \"{1}\" }}", 0, $"Success!");
+                            response = String.Format("{{err: {0}, message: \"{1}\" }}", 0, $"Success!");
                             await resp.OutputStream.WriteAsync(Encoding.UTF8.GetBytes(response, 0, response.Length));
                             resp.Close();
                         }
@@ -2014,8 +2019,8 @@ namespace HttpListenerBank
                         break;
                         case "/android/request":
                         {
-                        	// Ensure data is there and valid
-                        	decimal amount;
+                            // Ensure data is there and valid
+                            decimal amount;
                             int sender;
                             string response = "";
 
@@ -2056,7 +2061,7 @@ namespace HttpListenerBank
                             }
 
                             // Check if token exists
-							if(!dict.ContainsKey("token")){
+                            if(!dict.ContainsKey("token")){
                                 response = String.Format("{{err: {0}, message: \"{1}\" }}", -1, "No token was provided with the request");
                                 await resp.OutputStream.WriteAsync(Encoding.UTF8.GetBytes(response, 0, response.Length));
                                 resp.Close();
@@ -2073,13 +2078,13 @@ namespace HttpListenerBank
                             var phone = usersLoggedIn[dict["token"]];
 
                             // Check if sender exists
-				            User from = userList.SingleOrDefault(u => u.PhoneNumber == sender);
-				            if(from == null){
+                            User from = userList.SingleOrDefault(u => u.PhoneNumber == sender);
+                            if(from == null){
                                 response = String.Format("{{err: {0}, message: \"{1}\" }}", -1, $"Could not find an account with the number {sender}");
                                 await resp.OutputStream.WriteAsync(Encoding.UTF8.GetBytes(response, 0, response.Length));
                                 resp.Close();
                                 break;
-				            }
+                            }
                             if(from.PhoneNumber == phone){
                                 response = String.Format("{{err: {0}, message: \"{1}\" }}", -1, $"Can't request money from yourself");
                                 await resp.OutputStream.WriteAsync(Encoding.UTF8.GetBytes(response, 0, response.Length));
@@ -2087,33 +2092,33 @@ namespace HttpListenerBank
                                 break;
                             }
 
-				            // Check if recipient exists
-				            User to = userList.SingleOrDefault(u => u.PhoneNumber == phone);
-				            if(to == null){
+                            // Check if recipient exists
+                            User to = userList.SingleOrDefault(u => u.PhoneNumber == phone);
+                            if(to == null){
                                 response = String.Format("{{err: {0}, message: \"{1}\" }}", -1, $"Could not find an account with the number {phone}");
                                 await resp.OutputStream.WriteAsync(Encoding.UTF8.GetBytes(response, 0, response.Length));
                                 resp.Close();
                                 break;
-				            }
+                            }
 
-				            // Parse reason if it exists
+                            // Parse reason if it exists
                             string reason = null;
                             if(dict.ContainsKey("reason")){
-                            	if(dict["reason"] != ""){
-                            		reason = dict["reason"];
-                            	}
+                                if(dict["reason"] != ""){
+                                    reason = dict["reason"];
+                                }
                             }
 
                             // Send request
-							var (id, err) = Transfer(sender, phone, amount, 0.00m, "Request", reason);
-							if(id == -1){
-								response = String.Format("{{err: {0}, message: \"{1}\" }}", -1, err);
+                            var (id, err) = Transfer(sender, phone, amount, 0.00m, "Request", reason);
+                            if(id == -1){
+                                response = String.Format("{{err: {0}, message: \"{1}\" }}", -1, err);
                                 await resp.OutputStream.WriteAsync(Encoding.UTF8.GetBytes(response, 0, response.Length));
                                 resp.Close();
                                 break;
-							}
+                            }
 
-		                	response = String.Format("{{err: {0}, message: \"{1}\" }}", 0, $"Successfully requested {amount} E-GNF from {sender}");
+                            response = String.Format("{{err: {0}, message: \"{1}\" }}", 0, $"Successfully requested {amount} E-GNF from {sender}");
                             await resp.OutputStream.WriteAsync(Encoding.UTF8.GetBytes(response, 0, response.Length));
                             resp.Close();
                         }
@@ -2254,7 +2259,7 @@ namespace HttpListenerBank
                             string response = "";
                             decimal amount;
                             var dict = req.QueryString;
-                            
+
 
                             if(dict["amount"] == null || dict["amount"] == ""){
                                 response = String.Format("{{ err: -1, message: \"No type was specified\" }}");
@@ -2295,22 +2300,22 @@ namespace HttpListenerBank
                             }
                             var typ = dict["type"];
                             if(typ == "deposit"){
-                            	var agents = userList.Where(u => u.ActiveAgentEMoney && amount <= u.MaxAmountEMoney && u.PhoneNumber != phone).Select(u => new {u.ID, u.PhoneNumber, u.EMoneyFee}).OrderBy(u => u.EMoneyFee).ToList();
-                        		var jsonagents = JsonSerializer.Serialize(agents);
+                                var agents = userList.Where(u => u.ActiveAgentEMoney && amount <= u.MaxAmountEMoney && u.PhoneNumber != phone).Select(u => new {u.ID, u.PhoneNumber, u.EMoneyFee}).OrderBy(u => u.EMoneyFee).ToList();
+                                var jsonagents = JsonSerializer.Serialize(agents);
                                 response = String.Format("{{ err: 0, agents: {0} }}", jsonagents);
                                 await resp.OutputStream.WriteAsync(Encoding.UTF8.GetBytes(response, 0, response.Length));
                                 resp.Close();
                             } else if(typ == "withdrawal"){
-                            	var agents = userList.Where(u => u.ActiveAgentCash && amount <= u.MaxAmountCash && u.PhoneNumber != phone).Select(u => new {u.ID, u.PhoneNumber, u.CashFee}).OrderBy(u => u.CashFee).ToList();
-                        		var jsonagents = JsonSerializer.Serialize(agents);
+                                var agents = userList.Where(u => u.ActiveAgentCash && amount <= u.MaxAmountCash && u.PhoneNumber != phone).Select(u => new {u.ID, u.PhoneNumber, u.CashFee}).OrderBy(u => u.CashFee).ToList();
+                                var jsonagents = JsonSerializer.Serialize(agents);
                                 response = String.Format("{{ err: 0, agents: {0} }}", jsonagents);
                                 await resp.OutputStream.WriteAsync(Encoding.UTF8.GetBytes(response, 0, response.Length));
                                 resp.Close();
-                        	} else{
+                            } else{
                                 response = String.Format("{{ err: -1, message: \"The type specified was neither of type deposit or withdrawal\" }}");
                                 await resp.OutputStream.WriteAsync(Encoding.UTF8.GetBytes(response, 0, response.Length));
                                 resp.Close();
-                        	}
+                            }
                         }
                         break;
                         default:
