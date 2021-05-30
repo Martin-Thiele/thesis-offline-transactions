@@ -1844,6 +1844,45 @@ namespace HttpListenerBank
                         break;
                         case "/android/decline":
                         {
+                            string response = "";
+                            if(!dict.ContainsKey("id") || dict["id"] == null || dict["id"] == ""){
+                                response = String.Format("{{err: {0}, message: \"{1}\" }}", -1, "no ID could be found");
+                                await resp.OutputStream.WriteAsync(Encoding.UTF8.GetBytes(response, 0, response.Length));
+                                resp.Close();
+                                break;
+                            }
+                            if(!dict.ContainsKey("token")){
+                                response = String.Format("{{err: {0}, message: \"{1}\" }}", -1, "No token was provided with the request");
+                                await resp.OutputStream.WriteAsync(Encoding.UTF8.GetBytes(response, 0, response.Length));
+                                resp.Close();
+                                break;
+                            }
+                            if (!usersLoggedIn.ContainsKey(dict["token"])){
+                                response = String.Format("{{err: {0}, message: \"{1}\" }}", -50, $"This session has expired, please log back in");
+                                await resp.OutputStream.WriteAsync(Encoding.UTF8.GetBytes(response, 0, response.Length));
+                                resp.Close();
+                                break;
+                            }
+                            int orderId;
+                            bool successId = int.TryParse(dict["id"], out orderId);
+                            if(!successId){
+                                response = String.Format("{{err: {0}, message: \"{1}\" }}", -1, "The order id is not valid");
+                                await resp.OutputStream.WriteAsync(Encoding.UTF8.GetBytes(response, 0, response.Length));
+                                resp.Close();
+                                break;
+                            }
+                            // fetch token
+                            var phone = usersLoggedIn[dict["token"]];
+                            var (err, msg) = Decline(phone, orderId);
+                            if(err == -1){
+                                response = String.Format("{{err: {0}, message: \"{1}\" }}", -1, msg);
+                                await resp.OutputStream.WriteAsync(Encoding.UTF8.GetBytes(response, 0, response.Length));
+                                resp.Close();
+                                break;
+                            }
+                            response = String.Format("{{err: {0}, message: \"{1}\" }}", 0, "Success");
+                            await resp.OutputStream.WriteAsync(Encoding.UTF8.GetBytes(response, 0, response.Length));
+                            resp.Close();
 
                         }
                         break;
